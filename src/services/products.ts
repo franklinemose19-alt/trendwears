@@ -105,7 +105,7 @@ export function sortProducts(products: ProductWithStats[], sort: SortOption): Pr
 }
 
 export function buildWhatsAppLink(whatsappNumber: string, product: Pick<Product, 'name' | 'price'>): string {
-  const message = 'Hi THRIFT WEARs, I am interested in ordering the ' + product.name + ' for KSh ' + product.price.toLocaleString() + '. Is it still available?'
+  const message = 'Hi TRENDTHRIFT WEARs, I am interested in ordering the ' + product.name + ' for KSh ' + product.price.toLocaleString() + '. Is it still available?'
   const digits = whatsappNumber.replace(/[^\d]/g, '')
   return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message)
 }
