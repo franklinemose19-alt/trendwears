@@ -20,7 +20,7 @@ export default function AdminSidebar() {
 
   return (
     <aside className="flex w-56 flex-col border-r border-white/10 p-5">
-      <span className="mb-8 font-display text-lg">THRIFT WEARs</span>
+      <span className="mb-8 font-display text-lg">TRENDTHRIFT WEARs</span>
 
       <nav className="flex flex-1 flex-col gap-1">
         {links.map(({ to, label, icon: Icon, end }) => (
