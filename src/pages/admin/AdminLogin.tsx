@@ -28,7 +28,7 @@ export default function AdminLogin() {
     <div className="flex min-h-screen items-center justify-center bg-[#0f0f10] px-5 text-[#e8e8e6]">
       <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-2xl border border-white/10 p-8">
         <h1 className="font-display text-2xl">Admin login</h1>
-        <p className="mt-1 text-sm text-white/50">THRIFT WEARs dashboard</p>
+        <p className="mt-1 text-sm text-white/50">TRENDTHRIFT WEARs dashboard</p>
 
         <div className="mt-6 space-y-4">
           <div>
