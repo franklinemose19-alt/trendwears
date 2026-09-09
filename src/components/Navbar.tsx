@@ -16,7 +16,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-paper/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <Link to="/" className="font-display text-xl tracking-tight text-ink" onClick={() => setOpen(false)}>
-          THRIFT WEARs
+          TRENDTHRIFT WEARs
         </Link>
 
         <nav className="hidden gap-8 md:flex">
