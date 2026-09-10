@@ -104,12 +104,6 @@ export function sortProducts(products: ProductWithStats[], sort: SortOption): Pr
   }
 }
 
-export function buildWhatsAppLink(whatsappNumber: string, product: Pick<Product, 'name' | 'price'>): string {
-  const message = 'Hi TRENDTHRIFT WEARs, I am interested in ordering the ' + product.name + ' for KSh ' + product.price.toLocaleString() + '. Is it still available?'
-  const digits = whatsappNumber.replace(/[^\d]/g, '')
-  return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message)
-}
-
 function countBy<T extends Record<string, any>>(rows: T[], key: keyof T): Record<string, number> {
   return rows.reduce((acc, row) => {
     const k = row[key] as string
