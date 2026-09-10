@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { useProducts } from '@/hooks/useProducts'
+import { useSettings } from '@/hooks/useSettings'
 import ProductGrid from '@/components/ProductGrid'
 import { sortProducts } from '@/services/products'
 import type { SortOption } from '@/types'
@@ -10,6 +11,7 @@ const categories = ['All', 'Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants']
 
 export default function Shop() {
   const { products, loading } = useProducts()
+  const settings = useSettings()
   const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState(searchParams.get('category') || 'All')
@@ -76,7 +78,7 @@ export default function Shop() {
       </div>
 
       <div className="mt-8">
-        {loading ? <p className="py-16 text-center text-stone">Loading...</p> : <ProductGrid products={filtered} />}
+        {loading ? <p className="py-16 text-center text-stone">Loading...</p> : <ProductGrid products={filtered} whatsappNumber={settings?.whatsapp_number ?? ''} />}
       </div>
     </div>
   )
