@@ -1,14 +1,14 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAdmin, checking } = useIsAdmin()
 
-  if (loading) {
+  if (checking) {
     return <div className="flex min-h-screen items-center justify-center text-stone">Loading...</div>
   }
 
-  if (!isAuthenticated) {
+  if (!isAdmin) {
     return <Navigate to="/admin/login" replace />
   }
 
