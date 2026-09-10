@@ -4,6 +4,7 @@ import { useProduct } from '@/hooks/useProduct'
 import { useSettings } from '@/hooks/useSettings'
 import ProductGallery from '@/components/ProductGallery'
 import LikeButton from '@/components/LikeButton'
+import SaveButton from '@/components/SaveButton'
 import WhatsAppButton from '@/components/WhatsAppButton'
 
 export default function ProductDetails() {
@@ -54,13 +55,22 @@ export default function ProductDetails() {
             {product.view_count} views - {product.like_count} likes
           </p>
 
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <LikeButton productId={product.id} liked={!!product.liked_by_visitor} count={product.like_count} />
-            {!sold && settings?.whatsapp_number && (
-              <WhatsAppButton product={product} whatsappNumber={settings.whatsapp_number} full />
+            <SaveButton
+              product={{
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                category: product.category,
+                images: product.images,
+                status: product.status,
+              }}
+            />
+            {settings?.whatsapp_number && (
+              <WhatsAppButton product={product} whatsappNumber={settings.whatsapp_number} soldOut={sold} full />
             )}
           </div>
-          {sold && <p className="mt-3 text-sm text-stone">This piece has already found a home.</p>}
         </div>
       </div>
     </div>
