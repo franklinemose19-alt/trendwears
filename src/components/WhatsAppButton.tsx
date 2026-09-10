@@ -1,17 +1,30 @@
 import { MessageCircle } from 'lucide-react'
-import { recordWhatsAppClick, buildWhatsAppLink } from '@/services/products'
+import { recordWhatsAppClick } from '@/services/products'
+import { orderProduct } from '@/utils/whatsapp'
 import type { Product } from '@/types'
 
 interface Props {
   product: Pick<Product, 'id' | 'name' | 'price'>
   whatsappNumber: string
   full?: boolean
+  soldOut?: boolean
 }
 
-export default function WhatsAppButton({ product, whatsappNumber, full }: Props) {
+export default function WhatsAppButton({ product, whatsappNumber, full, soldOut }: Props) {
   async function handleClick() {
     await recordWhatsAppClick(product.id)
-    window.open(buildWhatsAppLink(whatsappNumber, product), '_blank')
+    window.open(orderProduct(product, whatsappNumber), '_blank')
+  }
+
+  if (soldOut) {
+    return (
+      <button
+        disabled
+        className={'inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-full bg-ink/10 px-6 py-3 text-sm font-medium text-stone ' + (full ? 'w-full' : '')}
+      >
+        Sold Out
+      </button>
+    )
   }
 
   return (
