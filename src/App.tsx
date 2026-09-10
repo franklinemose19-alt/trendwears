@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout'
 import AdminLayout from '@/layouts/AdminLayout'
 import Home from '@/pages/Home'
 import Shop from '@/pages/Shop'
+import Saved from '@/pages/Saved'
 import ProductDetails from '@/pages/ProductDetails'
 import About from '@/pages/About'
 import Contact from '@/pages/Contact'
@@ -19,6 +20,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path="/saved" element={<Saved />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
