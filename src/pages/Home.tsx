@@ -16,9 +16,8 @@ export default function Home() {
   const latest = available.slice(0, 4)
   const popular = useMemo(() => sortProducts(available, 'most_liked').slice(0, 4), [available])
 
-  const waLink = settings?.whatsapp_number
-    ? 'https://wa.me/' + settings.whatsapp_number.replace(/[^\d]/g, '')
-    : ''
+  const whatsappNumber = settings?.whatsapp_number ?? ''
+  const waLink = whatsappNumber ? 'https://wa.me/' + whatsappNumber.replace(/[^\d]/g, '') : ''
 
   return (
     <div>
@@ -40,7 +39,7 @@ export default function Home() {
                 Browse the collection
               </Link>
               {waLink && (
-                <a
+                
                   href={waLink}
                   target="_blank"
                   rel="noreferrer"
@@ -75,13 +74,13 @@ export default function Home() {
           <h2 className="font-display text-2xl text-ink">Latest drops</h2>
           <Link to="/shop" className="text-sm text-stone hover:text-ink">View all</Link>
         </div>
-        {!loading && <ProductGrid products={latest} />}
+        {!loading && <ProductGrid products={latest} whatsappNumber={whatsappNumber} />}
       </section>
 
       {popular.length > 0 && (
         <section className="mx-auto max-w-6xl px-5 pb-16">
           <h2 className="mb-6 font-display text-2xl text-ink">Popular right now</h2>
-          <ProductGrid products={popular} />
+          <ProductGrid products={popular} whatsappNumber={whatsappNumber} />
         </section>
       )}
     </div>
