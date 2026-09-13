@@ -7,7 +7,7 @@ import ProductGrid from '@/components/ProductGrid'
 import { sortProducts } from '@/services/products'
 import type { SortOption } from '@/types'
 
-const categories = ['All', 'Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants']
+const categories = ['All', 'Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes']
 
 export default function Shop() {
   const { products, loading } = useProducts()
