@@ -1,12 +1,18 @@
 import { useState } from 'react'
+import { ImageOff } from 'lucide-react'
 
 export default function ProductGallery({ images, alt }: { images: string[]; alt: string }) {
   const [active, setActive] = useState(0)
+  const hasImages = images.length > 0
 
   return (
     <div>
-      <div className="aspect-[3/4] overflow-hidden bg-ink/5">
-        <img src={images[active]} alt={alt} className="h-full w-full object-cover" />
+      <div className="flex aspect-[3/4] items-center justify-center overflow-hidden bg-ink/5">
+        {hasImages ? (
+          <img src={images[active]} alt={alt} className="h-full w-full object-cover" />
+        ) : (
+          <ImageOff size={40} className="text-stone/40" />
+        )}
       </div>
 
       {images.length > 1 && (
