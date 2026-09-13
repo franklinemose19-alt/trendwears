@@ -9,7 +9,7 @@ interface Props {
   submitLabel: string
 }
 
-const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Other']
+const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes', 'Other']
 const conditions = ['Excellent', 'Good', 'Fair']
 
 export default function ProductForm({ initial, onSubmit, submitLabel }: Props) {
