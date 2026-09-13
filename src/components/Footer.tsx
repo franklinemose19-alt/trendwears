@@ -17,6 +17,9 @@ export default function Footer() {
         <Link to="/admin/login" className="mt-4 text-xs text-stone/50 hover:text-stone">
           Admin
         </Link>
+        <p className="mt-6 border-t border-ink/5 pt-4 text-xs text-stone/60">
+          Built by FRANK DAVINCI TECHNOLOGIES
+        </p>
       </div>
     </footer>
   )
