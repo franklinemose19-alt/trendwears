@@ -14,6 +14,9 @@ export default function Footer() {
           <Link to="/about" className="hover:text-ink">About</Link>
           <Link to="/contact" className="hover:text-ink">Contact</Link>
         </div>
+        <Link to="/admin/login" className="mt-4 text-xs text-stone/50 hover:text-stone">
+          Admin
+        </Link>
       </div>
     </footer>
   )
