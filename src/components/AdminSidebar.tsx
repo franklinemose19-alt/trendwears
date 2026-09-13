@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Package, BarChart3, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Package, BarChart3, Settings, LogOut, ArrowLeftCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const links = [
@@ -20,7 +20,15 @@ export default function AdminSidebar() {
 
   return (
     <aside className="flex w-56 flex-col border-r border-white/10 p-5">
-      <span className="mb-8 font-display text-lg">TRENDTHRIFT WEARs</span>
+      <span className="mb-8 font-display text-lg">TRENDTHRIFT WEARS</span>
+
+      <button
+        onClick={() => navigate('/shop')}
+        className="mb-6 flex items-center gap-3 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
+      >
+        <ArrowLeftCircle size={17} />
+        Exit to Store
+      </button>
 
       <nav className="flex flex-1 flex-col gap-1">
         {links.map(({ to, label, icon: Icon, end }) => (
