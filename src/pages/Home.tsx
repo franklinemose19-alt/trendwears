@@ -6,7 +6,7 @@ import { useSettings } from '@/hooks/useSettings'
 import ProductGrid from '@/components/ProductGrid'
 import { sortProducts } from '@/services/products'
 
-const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants']
+const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes']
 
 export default function Home() {
   const { products, loading } = useProducts()
