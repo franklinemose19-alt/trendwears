@@ -30,6 +30,8 @@ export default function ProductForm({ initial, onSubmit, submitLabel }: Props) {
     try {
       const urls = await Promise.all(Array.from(fileList).map(uploadProductImage))
       setImages((prev) => [...prev, ...urls])
+    } catch (err: any) {
+      alert('Image upload failed: ' + (err?.message ?? 'unknown error') + '. The product will not save an image until this succeeds.')
     } finally {
       setUploading(false)
     }
