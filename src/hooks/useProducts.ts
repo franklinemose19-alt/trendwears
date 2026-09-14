@@ -10,7 +10,11 @@ export function useProducts() {
   useEffect(() => {
     let cancelled = false
     fetchProductsWithStats()
-      .then((data) => { if (!cancelled) setProducts(data) })
+      .then((data) => {
+        if (cancelled) return
+        console.log('RAW PRODUCTS FROM DATABASE:', data)
+        setProducts(data)
+      })
       .catch((err) => { if (!cancelled) setError(err.message) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
