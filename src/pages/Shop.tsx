@@ -38,10 +38,10 @@ export default function Shop() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10">
-      <h1 className="font-display text-3xl text-ink">Shop the collection</h1>
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-5 md:py-10">
+      <h1 className="font-display text-2xl text-ink md:text-3xl">Shop the collection</h1>
 
-      <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="mt-4 flex flex-col gap-3 md:mt-6 md:flex-row md:items-center md:justify-between md:gap-4">
         <div className="flex items-center gap-2 rounded-full border border-ink/15 px-4 py-2 md:w-72">
           <Search size={16} className="text-stone" />
           <input
@@ -65,19 +65,19 @@ export default function Shop() {
         </select>
       </div>
 
-      <div className="mt-4 flex gap-3 overflow-x-auto text-sm">
+      <div className="mt-3 flex gap-2 overflow-x-auto text-sm md:mt-4 md:gap-3">
         {categories.map((c) => (
           <button
             key={c}
             onClick={() => handleCategory(c)}
-            className={'whitespace-nowrap rounded-full border px-4 py-1.5 ' + (category === c ? 'border-ink bg-ink text-paper' : 'border-ink/15 text-stone')}
+            className={'whitespace-nowrap rounded-full border px-3.5 py-1.5 ' + (category === c ? 'border-ink bg-ink text-paper' : 'border-ink/15 text-stone')}
           >
             {c}
           </button>
         ))}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-6 md:mt-8">
         {loading ? <p className="py-16 text-center text-stone">Loading...</p> : <ProductGrid products={filtered} whatsappNumber={settings?.whatsapp_number ?? ''} />}
       </div>
     </div>
