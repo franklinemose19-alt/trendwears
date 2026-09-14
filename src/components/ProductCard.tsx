@@ -51,7 +51,8 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
         </div>
       </Link>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex flex-col gap-2">
+        <WhatsAppButton product={product} whatsappNumber={whatsappNumber} soldOut={sold} full />
         <SaveButton
           product={{
             id: product.id,
@@ -61,8 +62,8 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
             images: product.images,
             status: product.status,
           }}
+          full
         />
-        <WhatsAppButton product={product} whatsappNumber={whatsappNumber} soldOut={sold} />
       </div>
     </div>
   )
