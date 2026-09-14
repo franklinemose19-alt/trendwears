@@ -20,7 +20,7 @@ export default function WhatsAppButton({ product, whatsappNumber, full, soldOut 
     return (
       <button
         disabled
-        className={'inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-full bg-ink/10 px-6 py-3 text-sm font-medium text-stone ' + (full ? 'w-full' : '')}
+        className={'inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-full bg-ink/10 px-4 py-2 text-xs font-medium text-stone ' + (full ? 'w-full' : '')}
       >
         Sold Out
       </button>
@@ -30,9 +30,9 @@ export default function WhatsAppButton({ product, whatsappNumber, full, soldOut 
   return (
     <button
       onClick={handleClick}
-      className={'inline-flex items-center justify-center gap-2 rounded-full bg-moss px-6 py-3 text-sm font-medium text-paper transition-transform hover:scale-[1.02] active:scale-[0.98] ' + (full ? 'w-full' : '')}
+      className={'inline-flex items-center justify-center gap-1.5 rounded-full bg-moss px-4 py-2 text-xs font-medium text-paper transition-transform hover:scale-[1.02] active:scale-[0.98] ' + (full ? 'w-full' : '')}
     >
-      <MessageCircle size={18} />
+      <MessageCircle size={15} />
       Order on WhatsApp
     </button>
   )
