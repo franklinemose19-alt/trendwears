@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react'
 import { useSavedProducts } from '@/hooks/useSavedProducts'
 import type { SavedProduct } from '@/utils/savedProducts'
 
-export default function SaveButton({ product }: { product: SavedProduct }) {
+export default function SaveButton({ product, full }: { product: SavedProduct; full?: boolean }) {
   const { toggle, isSaved } = useSavedProducts()
   const [saved, setSaved] = useState(isSaved(product.id))
   const [showToast, setShowToast] = useState(false)
@@ -23,9 +23,9 @@ export default function SaveButton({ product }: { product: SavedProduct }) {
     <>
       <button
         onClick={handleClick}
-        className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 px-4 py-2 text-sm text-ink transition-transform hover:border-ink/30 active:scale-95"
+        className={'inline-flex items-center justify-center gap-1.5 rounded-full border border-ink/15 px-4 py-2 text-xs text-ink transition-transform hover:border-ink/30 active:scale-95 ' + (full ? 'w-full' : '')}
       >
-        <Heart size={16} className={saved ? 'fill-rust text-rust' : 'text-stone'} />
+        <Heart size={15} className={saved ? 'fill-rust text-rust' : 'text-stone'} />
         {saved ? 'Saved' : 'Save'}
       </button>
 
