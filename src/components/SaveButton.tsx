@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Heart } from 'lucide-react'
 import { useSavedProducts } from '@/hooks/useSavedProducts'
 import type { SavedProduct } from '@/utils/savedProducts'
@@ -19,7 +20,7 @@ export default function SaveButton({ product }: { product: SavedProduct }) {
   }
 
   return (
-    <div className="relative inline-block">
+    <>
       <button
         onClick={handleClick}
         className="inline-flex items-center gap-1.5 rounded-full border border-ink/15 px-4 py-2 text-sm text-ink transition-transform hover:border-ink/30 active:scale-95"
@@ -28,11 +29,12 @@ export default function SaveButton({ product }: { product: SavedProduct }) {
         {saved ? 'Saved' : 'Save'}
       </button>
 
-      {showToast && (
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-3 py-1 text-xs text-paper transition-opacity">
+      {showToast && createPortal(
+        <div className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm text-paper shadow-lg">
           Saved to your collection
-        </span>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   )
 }
