@@ -24,7 +24,7 @@ export default function Footer() {
         )}
         <p className="mt-6 border-t border-ink/5 pt-4 text-xs text-stone/60">
           Built by FRANK DAVINCI TECHNOLOGIES.
-          at the end of the day its all about W'S in da store
+          <p><b>At the end of the day its all about W'S in da store</b></p>
         </p>
       </div>
     </footer>
