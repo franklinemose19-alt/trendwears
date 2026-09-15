@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ImageOff } from 'lucide-react'
 import SaveButton from '@/components/SaveButton'
@@ -8,17 +7,6 @@ import type { ProductWithStats } from '@/types'
 export default function ProductCard({ product, whatsappNumber }: { product: ProductWithStats; whatsappNumber: string }) {
   const sold = product.status === 'sold'
   const hasImage = product.images.length > 0
-
-  useEffect(() => {
-    console.log('PRODUCT:', {
-      id: product.id,
-      name: product.name,
-      image: (product as any).image,
-      image_url: (product as any).image_url,
-      imageUrl: (product as any).imageUrl,
-      images: product.images,
-    })
-  }, [product.id])
 
   return (
     <div className="group">
@@ -30,8 +18,6 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
               alt={product.name}
               className={'h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ' + (sold ? 'grayscale' : '')}
               loading="lazy"
-              onLoad={() => console.log('Image loaded OK:', product.name, product.images[0])}
-              onError={() => console.error('IMAGE FAILED TO LOAD', { id: product.id, name: product.name, url: product.images[0] })}
             />
           ) : (
             <ImageOff size={28} className="text-stone/40" />
