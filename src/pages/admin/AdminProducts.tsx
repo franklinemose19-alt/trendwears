@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, X, Database } from 'lucide-react'
+import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { fetchProductsWithStats } from '@/services/products'
 import { createProduct, updateProduct, deleteProduct } from '@/services/admin'
 import ProductForm from '@/components/ProductForm'
-import { seedSampleProducts } from '@/utils/seed'
 import type { Product, ProductWithStats } from '@/types'
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
-  const [seeding, setSeeding] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -44,27 +42,13 @@ export default function AdminProducts() {
     load()
   }
 
-  async function handleSeed() {
-    setSeeding(true)
-    await seedSampleProducts()
-    await load()
-    setSeeding(false)
-  }
-
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl">Products</h1>
-        <div className="flex gap-2">
-          {products.length === 0 && !loading && (
-            <button onClick={handleSeed} disabled={seeding} className="flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2 text-sm">
-              <Database size={16} /> {seeding ? 'Seeding...' : 'Seed sample products'}
-            </button>
-          )}
-          <button onClick={() => setEditing('new')} className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black">
-            <Plus size={16} /> Add product
-          </button>
-        </div>
+        <button onClick={() => setEditing('new')} className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black">
+          <Plus size={16} /> Add product
+        </button>
       </div>
 
       {editing && (
