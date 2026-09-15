@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 
 export default function Footer() {
+  const { isAdmin } = useIsAdmin()
+
   return (
     <footer className="border-t border-ink/10 py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 text-center">
@@ -14,9 +17,11 @@ export default function Footer() {
           <Link to="/about" className="hover:text-ink">About</Link>
           <Link to="/contact" className="hover:text-ink">Contact</Link>
         </div>
-        <Link to="/admin/login" className="mt-4 text-xs text-stone/50 hover:text-stone">
-          Admin
-        </Link>
+        {isAdmin && (
+          <Link to="/admin" className="mt-4 text-xs text-stone/50 hover:text-stone">
+            Admin
+          </Link>
+        )}
         <p className="mt-6 border-t border-ink/5 pt-4 text-xs text-stone/60">
           Built by FRANK DAVINCI TECHNOLOGIES
         </p>
