@@ -1,26 +1,26 @@
 import { useEffect, useState } from 'react'
-import { fetchSettings, updateSettings } from '@/services/admin'
-import type { AdminSettings } from '@/types'
+import { fetchMyBusiness, updateBusiness } from '@/services/businesses'
+import type { Business } from '@/types'
 
-const fields: [keyof AdminSettings, string][] = [
-  ['store_name', 'Store name'],
+const fields: [keyof Business, string][] = [
+  ['name', 'Store name'],
   ['whatsapp_number', 'WhatsApp number (e.g. 254712345678)'],
-  ['store_description', 'Store description'],
+  ['description', 'Store description'],
   ['instagram_url', 'Instagram URL'],
   ['tiktok_url', 'TikTok URL'],
   ['facebook_url', 'Facebook URL'],
 ]
 
 export default function AdminSettingsPage() {
-  const [settings, setSettings] = useState<AdminSettings | null>(null)
+  const [settings, setSettings] = useState<Business | null>(null)
   const [saved, setSaved] = useState(false)
 
-  useEffect(() => { fetchSettings().then(setSettings) }, [])
+  useEffect(() => { fetchMyBusiness().then(setSettings) }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!settings) return
-    await updateSettings(settings)
+    await updateBusiness(settings.id, settings)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-lg space-y-4 rounded-2xl border border-white/10 p-6">
         {fields.map(([key, label]) => (
-          <div key={key}>
+          <div key={String(key)}>
             <label className="mb-1 block text-sm text-white/60">{label}</label>
             <input
               value={(settings[key] as string) ?? ''}
