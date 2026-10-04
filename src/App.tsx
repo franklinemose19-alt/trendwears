@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import StoreLayout from '@/layouts/StoreLayout'
 import AdminLayout from '@/layouts/AdminLayout'
+import MiraAdminLayout from '@/layouts/MiraAdminLayout'
 import Home from '@/pages/Home'
 import Shop from '@/pages/Shop'
 import Saved from '@/pages/Saved'
@@ -12,7 +13,10 @@ import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminProducts from '@/pages/admin/AdminProducts'
 import AdminAnalytics from '@/pages/admin/AdminAnalytics'
 import AdminSettings from '@/pages/admin/AdminSettings'
+import MiraAdminLogin from '@/pages/mira-admin/MiraAdminLogin'
+import BusinessList from '@/pages/mira-admin/BusinessList'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import MiraProtectedRoute from '@/components/MiraProtectedRoute'
 
 export default function App() {
   return (
@@ -41,6 +45,18 @@ export default function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="settings" element={<AdminSettings />} />
+      </Route>
+
+      <Route path="/mira-admin/login" element={<MiraAdminLogin />} />
+      <Route
+        path="/mira-admin"
+        element={
+          <MiraProtectedRoute>
+            <MiraAdminLayout />
+          </MiraProtectedRoute>
+        }
+      >
+        <Route index element={<BusinessList />} />
       </Route>
     </Routes>
   )
