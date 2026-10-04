@@ -8,12 +8,12 @@ import Saved from '@/pages/Saved'
 import ProductDetails from '@/pages/ProductDetails'
 import About from '@/pages/About'
 import Contact from '@/pages/Contact'
-import AdminLogin from '@/pages/admin/AdminLogin'
+import Login from '@/pages/Login'
+import Register from '@/pages/Register'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminProducts from '@/pages/admin/AdminProducts'
 import AdminAnalytics from '@/pages/admin/AdminAnalytics'
 import AdminSettings from '@/pages/admin/AdminSettings'
-import MiraAdminLogin from '@/pages/mira-admin/MiraAdminLogin'
 import BusinessList from '@/pages/mira-admin/BusinessList'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import MiraProtectedRoute from '@/components/MiraProtectedRoute'
@@ -32,7 +32,9 @@ export default function App() {
         <Route path="contact" element={<Contact />} />
       </Route>
 
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
       <Route
         path="/admin"
         element={
@@ -47,7 +49,6 @@ export default function App() {
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 
-      <Route path="/mira-admin/login" element={<MiraAdminLogin />} />
       <Route
         path="/mira-admin"
         element={
