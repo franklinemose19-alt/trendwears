@@ -54,3 +54,34 @@ export async function fetchPlanFeatures(plan: Plan): Promise<PlanFeatures> {
   })
   return features
 }
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
+export async function registerBusiness(params: {
+  name: string
+  whatsappNumber: string
+}): Promise<void> {
+  const { data: auth } = await supabase.auth.getUser()
+  if (!auth.user) throw new Error('You must be signed in to register a business.')
+
+  const baseSlug = slugify(params.name) || 'store'
+  const uniqueSlug = baseSlug + '-' + auth.user.id.slice(0, 6)
+
+  const { error } = await supabase.from('businesses').insert({
+    slug: uniqueSlug,
+    name: params.name,
+    whatsapp_number: params.whatsappNumber,
+    status: 'pending',
+    plan: 'basic',
+    subscription_status: 'unpaid',
+    owner_user_id: auth.user.id,
+  })
+
+  if (error) throw error
+}
