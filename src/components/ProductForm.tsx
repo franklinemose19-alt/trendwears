@@ -3,9 +3,11 @@ import { Upload, X } from 'lucide-react'
 import { uploadProductImage } from '@/services/admin'
 import type { Product, ProductStatus } from '@/types'
 
+type ProductDraft = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>
+
 interface Props {
   initial?: Partial<Product>
-  onSubmit: (data: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  onSubmit: (data: ProductDraft) => Promise<void>
   submitLabel: string
 }
 
