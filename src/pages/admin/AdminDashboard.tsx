@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchOverviewStats } from '@/services/admin'
+import { fetchMyBusiness } from '@/services/businesses'
 import StatsCard from '@/components/StatsCard'
 import type { OverviewStats } from '@/types'
 
@@ -7,7 +8,9 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<OverviewStats | null>(null)
 
   useEffect(() => {
-    fetchOverviewStats().then(setStats)
+    fetchMyBusiness().then((business) => {
+      if (business) fetchOverviewStats(business.id).then(setStats)
+    })
   }, [])
 
   return (
