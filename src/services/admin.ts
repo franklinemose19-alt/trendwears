@@ -1,14 +1,14 @@
 import { supabase } from '@/lib/supabase'
 import type { OverviewStats, Product } from '@/types'
 
-export async function fetchOverviewStats(): Promise<OverviewStats> {
+export async function fetchOverviewStats(businessId: string): Promise<OverviewStats> {
   const [total, views, likes, clicks, available, sold] = await Promise.all([
-    supabase.from('products').select('*', { count: 'exact', head: true }),
-    supabase.from('product_views').select('*', { count: 'exact', head: true }),
-    supabase.from('product_likes').select('*', { count: 'exact', head: true }),
-    supabase.from('whatsapp_clicks').select('*', { count: 'exact', head: true }),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'available'),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'sold'),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('business_id', businessId),
+    supabase.from('product_views').select('*', { count: 'exact', head: true }).eq('business_id', businessId),
+    supabase.from('product_likes').select('*', { count: 'exact', head: true }).eq('business_id', businessId),
+    supabase.from('whatsapp_clicks').select('*', { count: 'exact', head: true }).eq('business_id', businessId),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('business_id', businessId).eq('status', 'available'),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('business_id', businessId).eq('status', 'sold'),
   ])
 
   return {
@@ -46,9 +46,9 @@ export async function uploadProductImage(file: File): Promise<string> {
   return data.publicUrl
 }
 
-export async function fetchViewsLast30Days(): Promise<{ date: string; views: number }[]> {
+export async function fetchViewsLast30Days(businessId: string): Promise<{ date: string; views: number }[]> {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  const { data, error } = await supabase.from('product_views').select('created_at').gte('created_at', since)
+  const { data, error } = await supabase.from('product_views').select('created_at').eq('business_id', businessId).gte('created_at', since)
   if (error) throw error
 
   const counts: Record<string, number> = {}
