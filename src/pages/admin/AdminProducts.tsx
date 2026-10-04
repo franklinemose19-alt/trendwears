@@ -14,9 +14,12 @@ export default function AdminProducts() {
 
   async function load() {
     setLoading(true)
-    const [data, business] = await Promise.all([fetchProductsWithStats(), fetchMyBusiness()])
-    setProducts(data)
+    const business = await fetchMyBusiness()
     setBusinessId(business?.id ?? null)
+    if (business) {
+      const data = await fetchProductsWithStats(business.id)
+      setProducts(data)
+    }
     setLoading(false)
   }
 
