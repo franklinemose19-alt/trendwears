@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchProductsWithStats, sortProducts } from '@/services/products'
 import { fetchViewsLast30Days } from '@/services/admin'
+import { fetchMyBusiness } from '@/services/businesses'
 import AnalyticsChart from '@/components/AnalyticsChart'
 import type { ProductWithStats } from '@/types'
 
@@ -9,8 +10,11 @@ export default function AdminAnalytics() {
   const [chartData, setChartData] = useState<{ date: string; views: number }[]>([])
 
   useEffect(() => {
-    fetchProductsWithStats().then(setProducts)
-    fetchViewsLast30Days().then(setChartData)
+    fetchMyBusiness().then((business) => {
+      if (!business) return
+      fetchProductsWithStats(business.id).then(setProducts)
+      fetchViewsLast30Days(business.id).then(setChartData)
+    })
   }, [])
 
   const mostViewed = sortProducts(products, 'most_viewed').slice(0, 5)
