@@ -2,21 +2,21 @@ import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { useProducts } from '@/hooks/useProducts'
-import { useSettings } from '@/hooks/useSettings'
+import { useBusiness } from '@/contexts/BusinessContext'
 import ProductGrid from '@/components/ProductGrid'
 import { sortProducts } from '@/services/products'
 
 const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes']
 
 export default function Home() {
-  const { products, loading } = useProducts()
-  const settings = useSettings()
+  const { business, slug } = useBusiness()
+  const { products, loading } = useProducts(business?.id)
 
   const available = useMemo(() => products.filter((p) => p.status === 'available'), [products])
   const latest = available.slice(0, 4)
   const popular = useMemo(() => sortProducts(available, 'most_liked').slice(0, 4), [available])
 
-  const whatsappNumber = settings?.whatsapp_number ?? ''
+  const whatsappNumber = business?.whatsapp_number ?? ''
   const waLink = whatsappNumber ? 'https://wa.me/' + whatsappNumber.replace(/[^\d]/g, '') : ''
 
   return (
@@ -25,15 +25,14 @@ export default function Home() {
         <div className="grid items-center gap-6 md:grid-cols-2 md:gap-10">
           <div>
             <h1 className="font-display text-3xl leading-tight text-ink md:text-5xl">
-              Thrifted pieces, chosen one at a time.
+              {business?.name ?? 'Welcome'}
             </h1>
             <p className="mt-3 max-w-sm text-sm text-stone md:mt-4 md:text-base">
-              Every item in our showroom is a single find - no restocks, no duplicates. Browse the
-              collection, then message us to make it yours.
+              {business?.description || 'Browse the collection, then message us to make it yours.'}
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5 md:mt-8 md:gap-3">
               <Link
-                to="/shop"
+                to={'/store/' + slug + '/shop'}
                 className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-transform hover:scale-[1.02] md:px-6 md:py-3"
               >
                 Browse the collection
@@ -62,7 +61,7 @@ export default function Home() {
       <section className="border-y border-ink/10 py-4 md:py-6">
         <div className="mx-auto flex max-w-6xl gap-5 overflow-x-auto px-4 text-sm md:gap-6 md:px-5">
           {categories.map((c) => (
-            <Link key={c} to={'/shop?category=' + encodeURIComponent(c)} className="whitespace-nowrap text-stone hover:text-ink">
+            <Link key={c} to={'/store/' + slug + '/shop?category=' + encodeURIComponent(c)} className="whitespace-nowrap text-stone hover:text-ink">
               {c}
             </Link>
           ))}
@@ -72,7 +71,7 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-4 py-8 md:px-5 md:py-14">
         <div className="mb-4 flex items-end justify-between md:mb-6">
           <h2 className="font-display text-xl text-ink md:text-2xl">Latest drops</h2>
-          <Link to="/shop" className="text-sm text-stone hover:text-ink">View all</Link>
+          <Link to={'/store/' + slug + '/shop'} className="text-sm text-stone hover:text-ink">View all</Link>
         </div>
         {!loading && <ProductGrid products={latest} whatsappNumber={whatsappNumber} />}
       </section>
