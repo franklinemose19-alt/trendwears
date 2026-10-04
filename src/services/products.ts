@@ -1,18 +1,18 @@
 import { supabase } from '@/lib/supabase'
 import { getVisitorId } from '@/utils/visitorId'
-import type { Product, ProductWithStats, SortOption } from '@/types'
+import type { ProductWithStats, SortOption } from '@/types'
 
 const VIEW_DEDUPE_WINDOW_HOURS = 24
 
-export async function fetchProductsWithStats(): Promise<ProductWithStats[]> {
+export async function fetchProductsWithStats(businessId: string): Promise<ProductWithStats[]> {
   const visitorId = getVisitorId()
 
   const [{ data: products, error: pErr }, { data: views }, { data: likes }, { data: clicks }] =
     await Promise.all([
-      supabase.from('products').select('*').neq('status', 'draft').order('created_at', { ascending: false }),
-      supabase.from('product_views').select('product_id'),
-      supabase.from('product_likes').select('product_id, visitor_id'),
-      supabase.from('whatsapp_clicks').select('product_id'),
+      supabase.from('products').select('*').eq('business_id', businessId).neq('status', 'draft').order('created_at', { ascending: false }),
+      supabase.from('product_views').select('product_id').eq('business_id', businessId),
+      supabase.from('product_likes').select('product_id, visitor_id').eq('business_id', businessId),
+      supabase.from('whatsapp_clicks').select('product_id').eq('business_id', businessId),
     ])
 
   if (pErr) throw pErr
@@ -53,7 +53,7 @@ export async function fetchProductById(id: string): Promise<ProductWithStats | n
   }
 }
 
-export async function recordView(productId: string): Promise<void> {
+export async function recordView(productId: string, businessId: string): Promise<void> {
   const visitorId = getVisitorId()
   const since = new Date(Date.now() - VIEW_DEDUPE_WINDOW_HOURS * 60 * 60 * 1000).toISOString()
 
@@ -67,24 +67,24 @@ export async function recordView(productId: string): Promise<void> {
 
   if (recent) return
 
-  await supabase.from('product_views').insert({ product_id: productId, visitor_id: visitorId })
+  await supabase.from('product_views').insert({ product_id: productId, business_id: businessId, visitor_id: visitorId })
 }
 
-export async function toggleLike(productId: string, currentlyLiked: boolean): Promise<boolean> {
+export async function toggleLike(productId: string, businessId: string, currentlyLiked: boolean): Promise<boolean> {
   const visitorId = getVisitorId()
 
   if (currentlyLiked) {
     await supabase.from('product_likes').delete().eq('product_id', productId).eq('visitor_id', visitorId)
     return false
   } else {
-    await supabase.from('product_likes').insert({ product_id: productId, visitor_id: visitorId })
+    await supabase.from('product_likes').insert({ product_id: productId, business_id: businessId, visitor_id: visitorId })
     return true
   }
 }
 
-export async function recordWhatsAppClick(productId: string): Promise<void> {
+export async function recordWhatsAppClick(productId: string, businessId: string): Promise<void> {
   const visitorId = getVisitorId()
-  await supabase.from('whatsapp_clicks').insert({ product_id: productId, visitor_id: visitorId })
+  await supabase.from('whatsapp_clicks').insert({ product_id: productId, business_id: businessId, visitor_id: visitorId })
 }
 
 export function sortProducts(products: ProductWithStats[], sort: SortOption): ProductWithStats[] {
