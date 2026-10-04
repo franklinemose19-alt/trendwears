@@ -1,22 +1,22 @@
 import { Link } from 'react-router-dom'
 import { Trash2, MessageCircle } from 'lucide-react'
 import { useSavedProducts } from '@/hooks/useSavedProducts'
-import { useSettings } from '@/hooks/useSettings'
+import { useBusiness } from '@/contexts/BusinessContext'
 import { orderProduct, orderSavedProducts } from '@/utils/whatsapp'
 import { recordWhatsAppClick } from '@/services/products'
 
 export default function Saved() {
   const { saved, remove } = useSavedProducts()
-  const settings = useSettings()
-  const whatsappNumber = settings?.whatsapp_number ?? ''
+  const { business, slug } = useBusiness()
+  const whatsappNumber = business?.whatsapp_number ?? ''
 
   async function handleOrderOne(id: string, name: string, price: number) {
-    await recordWhatsAppClick(id)
+    if (business) await recordWhatsAppClick(id, business.id)
     window.open(orderProduct({ name, price }, whatsappNumber), '_blank')
   }
 
   async function handleOrderAll() {
-    await Promise.all(saved.map((p) => recordWhatsAppClick(p.id)))
+    if (business) await Promise.all(saved.map((p) => recordWhatsAppClick(p.id, business.id)))
     window.open(orderSavedProducts(saved, whatsappNumber), '_blank')
   }
 
@@ -40,7 +40,7 @@ export default function Saved() {
           <p className="text-stone">No saved items yet.</p>
           <p className="mt-2 text-stone">Browse the latest thrift finds and save the pieces you like.</p>
           <Link
-            to="/shop"
+            to={'/store/' + slug + '/shop'}
             className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper"
           >
             Browse Collection
