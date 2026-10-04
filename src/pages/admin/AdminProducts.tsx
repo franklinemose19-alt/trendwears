@@ -2,30 +2,37 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { fetchProductsWithStats } from '@/services/products'
 import { createProduct, updateProduct, deleteProduct } from '@/services/admin'
+import { fetchMyBusiness } from '@/services/businesses'
 import ProductForm from '@/components/ProductForm'
 import type { Product, ProductWithStats } from '@/types'
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
+  const [businessId, setBusinessId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
 
   async function load() {
     setLoading(true)
-    const data = await fetchProductsWithStats()
+    const [data, business] = await Promise.all([fetchProductsWithStats(), fetchMyBusiness()])
     setProducts(data)
+    setBusinessId(business?.id ?? null)
     setLoading(false)
   }
 
   useEffect(() => { load() }, [])
 
-  async function handleCreate(data: Omit<Product, 'id' | 'created_at' | 'updated_at'>) {
-    await createProduct(data)
+  async function handleCreate(data: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>) {
+    if (!businessId) {
+      alert('No business found for your account yet. Contact the MIRA admin to get set up.')
+      return
+    }
+    await createProduct({ ...data, business_id: businessId })
     setEditing(null)
     load()
   }
 
-  async function handleUpdate(id: string, data: Omit<Product, 'id' | 'created_at' | 'updated_at'>) {
+  async function handleUpdate(id: string, data: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>) {
     await updateProduct(id, data)
     setEditing(null)
     load()
