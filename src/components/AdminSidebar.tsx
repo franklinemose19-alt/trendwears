@@ -20,7 +20,7 @@ export default function AdminSidebar({ open, onClose }: Props) {
 
   async function handleLogout() {
     await signOut()
-    navigate('/admin/login')
+        navigate('/login')
   }
 
   function handleNavClick() {
