@@ -10,7 +10,7 @@ export default function MiraAdminLayout() {
 
   async function handleLogout() {
     await signOut()
-    navigate('/mira-admin/login')
+        navigate('/login')
   }
 
   return (
