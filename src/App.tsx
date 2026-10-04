@@ -1,5 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
-import Layout from '@/layouts/Layout'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import StoreLayout from '@/layouts/StoreLayout'
 import AdminLayout from '@/layouts/AdminLayout'
 import Home from '@/pages/Home'
 import Shop from '@/pages/Shop'
@@ -17,13 +17,15 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 export default function App() {
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/saved" element={<Saved />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+      <Route path="/" element={<Navigate to="/store/trendthrift-wears" replace />} />
+
+      <Route path="/store/:slug" element={<StoreLayout />}>
+        <Route index element={<Home />} />
+        <Route path="shop" element={<Shop />} />
+        <Route path="saved" element={<Saved />} />
+        <Route path="product/:id" element={<ProductDetails />} />
+        <Route path="about" element={<About />} />
+        <Route path="contact" element={<Contact />} />
       </Route>
 
       <Route path="/admin/login" element={<AdminLogin />} />
