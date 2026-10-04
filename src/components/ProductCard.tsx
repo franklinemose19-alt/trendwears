@@ -2,15 +2,17 @@ import { Link } from 'react-router-dom'
 import { ImageOff } from 'lucide-react'
 import SaveButton from '@/components/SaveButton'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import { useBusiness } from '@/contexts/BusinessContext'
 import type { ProductWithStats } from '@/types'
 
 export default function ProductCard({ product, whatsappNumber }: { product: ProductWithStats; whatsappNumber: string }) {
+  const { slug } = useBusiness()
   const sold = product.status === 'sold'
   const hasImage = product.images.length > 0
 
   return (
     <div className="group">
-      <Link to={'/product/' + product.id} className="block">
+      <Link to={'/store/' + slug + '/product/' + product.id} className="block">
         <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden bg-ink/5">
           {hasImage ? (
             <img
@@ -38,7 +40,7 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
       </Link>
 
       <div className="mt-3 flex flex-col gap-2">
-        <WhatsAppButton product={product} whatsappNumber={whatsappNumber} soldOut={sold} full />
+        <WhatsAppButton product={product} whatsappNumber={whatsappNumber} businessId={product.business_id} soldOut={sold} full />
         <SaveButton
           product={{
             id: product.id,
