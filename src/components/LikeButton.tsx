@@ -4,11 +4,12 @@ import { toggleLike } from '@/services/products'
 
 interface Props {
   productId: string
+  businessId: string
   liked: boolean
   count: number
 }
 
-export default function LikeButton({ productId, liked, count }: Props) {
+export default function LikeButton({ productId, businessId, liked, count }: Props) {
   const [isLiked, setIsLiked] = useState(liked)
   const [likeCount, setLikeCount] = useState(count)
   const [busy, setBusy] = useState(false)
@@ -20,7 +21,7 @@ export default function LikeButton({ productId, liked, count }: Props) {
     setIsLiked(next)
     setLikeCount((c) => c + (next ? 1 : -1))
     try {
-      await toggleLike(productId, isLiked)
+      await toggleLike(productId, businessId, isLiked)
     } catch {
       setIsLiked(!next)
       setLikeCount((c) => c + (next ? -1 : 1))
