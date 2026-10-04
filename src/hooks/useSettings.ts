@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { fetchSettings } from '@/services/admin'
-import type { AdminSettings } from '@/types'
+import { fetchMyBusiness } from '@/services/businesses'
+import type { Business } from '@/types'
 
 export function useSettings() {
-  const [settings, setSettings] = useState<AdminSettings | null>(null)
+  const [settings, setSettings] = useState<Business | null>(null)
 
   useEffect(() => {
-    fetchSettings().then(setSettings).catch(() => {})
+    fetchMyBusiness().then(setSettings).catch(() => {})
   }, [])
 
   return settings
