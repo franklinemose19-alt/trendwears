@@ -14,7 +14,7 @@ export function useProduct(id: string | undefined) {
       if (cancelled) return
       setProduct(data)
       setLoading(false)
-      if (data) recordView(id)
+      if (data) recordView(id, data.business_id)
     })
     return () => { cancelled = true }
   }, [id])
