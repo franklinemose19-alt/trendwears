@@ -9,7 +9,7 @@ export default function MiraProtectedRoute({ children }: { children: React.React
   }
 
   if (!isMiraAdmin) {
-    return <Navigate to="/mira-admin/login" replace />
+    return <Navigate to="/login" replace />
   }
 
   return <>{children}</>
