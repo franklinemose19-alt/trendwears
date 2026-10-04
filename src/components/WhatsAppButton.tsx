@@ -6,13 +6,14 @@ import type { Product } from '@/types'
 interface Props {
   product: Pick<Product, 'id' | 'name' | 'price'>
   whatsappNumber: string
+  businessId: string
   full?: boolean
   soldOut?: boolean
 }
 
-export default function WhatsAppButton({ product, whatsappNumber, full, soldOut }: Props) {
+export default function WhatsAppButton({ product, whatsappNumber, businessId, full, soldOut }: Props) {
   async function handleClick() {
-    await recordWhatsAppClick(product.id)
+    await recordWhatsAppClick(product.id, businessId)
     window.open(orderProduct(product, whatsappNumber), '_blank')
   }
 
