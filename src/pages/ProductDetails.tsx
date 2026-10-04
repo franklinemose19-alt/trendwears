@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { useProduct } from '@/hooks/useProduct'
-import { useSettings } from '@/hooks/useSettings'
+import { useBusiness } from '@/contexts/BusinessContext'
 import ProductGallery from '@/components/ProductGallery'
 import LikeButton from '@/components/LikeButton'
 import SaveButton from '@/components/SaveButton'
@@ -10,7 +10,7 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 export default function ProductDetails() {
   const { id } = useParams()
   const { product, loading } = useProduct(id)
-  const settings = useSettings()
+  const { business, slug } = useBusiness()
 
   if (loading) return <p className="py-24 text-center text-stone">Loading...</p>
   if (!product) return <p className="py-24 text-center text-stone">Product not found.</p>
@@ -19,7 +19,7 @@ export default function ProductDetails() {
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
-      <Link to="/shop" className="mb-6 inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
+      <Link to={'/store/' + slug + '/shop'} className="mb-6 inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
         <ChevronLeft size={16} /> Back to shop
       </Link>
 
@@ -56,7 +56,7 @@ export default function ProductDetails() {
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <LikeButton productId={product.id} liked={!!product.liked_by_visitor} count={product.like_count} />
+            <LikeButton productId={product.id} businessId={product.business_id} liked={!!product.liked_by_visitor} count={product.like_count} />
             <SaveButton
               product={{
                 id: product.id,
@@ -67,8 +67,8 @@ export default function ProductDetails() {
                 status: product.status,
               }}
             />
-            {settings?.whatsapp_number && (
-              <WhatsAppButton product={product} whatsappNumber={settings.whatsapp_number} soldOut={sold} full />
+            {business?.whatsapp_number && (
+              <WhatsAppButton product={product} whatsappNumber={business.whatsapp_number} businessId={product.business_id} soldOut={sold} full />
             )}
           </div>
         </div>
