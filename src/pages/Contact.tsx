@@ -1,10 +1,10 @@
 import { MessageCircle, Instagram } from 'lucide-react'
-import { useSettings } from '@/hooks/useSettings'
+import { useBusiness } from '@/contexts/BusinessContext'
 
 export default function Contact() {
-  const settings = useSettings()
-  const waLink = settings?.whatsapp_number
-    ? 'https://wa.me/' + settings.whatsapp_number.replace(/[^\d]/g, '')
+  const { business } = useBusiness()
+  const waLink = business?.whatsapp_number
+    ? 'https://wa.me/' + business.whatsapp_number.replace(/[^\d]/g, '')
     : ''
 
   return (
@@ -26,9 +26,9 @@ export default function Contact() {
         </a>
       )}
 
-      {settings?.instagram_url && (
+      {business?.instagram_url && (
         <a
-          href={settings.instagram_url}
+          href={business.instagram_url}
           target="_blank"
           rel="noreferrer"
           className="mt-4 flex items-center justify-center gap-2 text-sm text-stone hover:text-ink"
