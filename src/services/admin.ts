@@ -1,35 +1,23 @@
 import { supabase } from '@/lib/supabase'
-import type { AdminSettings, OverviewStats, Product } from '@/types'
-
-export async function fetchSettings(): Promise<AdminSettings> {
-  const { data, error } = await supabase.from('admin_settings').select('*').eq('id', 1).single()
-  if (error) throw error
-  return data
-}
-
-export async function updateSettings(patch: Partial<AdminSettings>): Promise<void> {
-  const { error } = await supabase.from('admin_settings').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', 1)
-  if (error) throw error
-}
+import type { OverviewStats, Product } from '@/types'
 
 export async function fetchOverviewStats(): Promise<OverviewStats> {
-  const [{ count: totalProducts }, { count: totalViews }, { count: totalLikes }, { count: whatsappEnquiries }, { count: availableProducts }, { count: soldProducts }] =
-    await Promise.all([
-      supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase.from('product_views').select('*', { count: 'exact', head: true }),
-      supabase.from('product_likes').select('*', { count: 'exact', head: true }),
-      supabase.from('whatsapp_clicks').select('*', { count: 'exact', head: true }),
-      supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'available'),
-      supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'sold'),
-    ])
+  const [total, views, likes, clicks, available, sold] = await Promise.all([
+    supabase.from('products').select('*', { count: 'exact', head: true }),
+    supabase.from('product_views').select('*', { count: 'exact', head: true }),
+    supabase.from('product_likes').select('*', { count: 'exact', head: true }),
+    supabase.from('whatsapp_clicks').select('*', { count: 'exact', head: true }),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'available'),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'sold'),
+  ])
 
   return {
-    totalProducts: totalProducts ?? 0,
-    totalViews: totalViews ?? 0,
-    totalLikes: totalLikes ?? 0,
-    whatsappEnquiries: whatsappEnquiries ?? 0,
-    availableProducts: availableProducts ?? 0,
-    soldProducts: soldProducts ?? 0,
+    totalProducts: total.count ?? 0,
+    totalViews: views.count ?? 0,
+    totalLikes: likes.count ?? 0,
+    whatsappEnquiries: clicks.count ?? 0,
+    availableProducts: available.count ?? 0,
+    soldProducts: sold.count ?? 0,
   }
 }
 
