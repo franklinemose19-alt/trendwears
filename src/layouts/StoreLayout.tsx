@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { BusinessProvider, useBusiness } from '@/contexts/BusinessContext'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import DynamicManifest from '@/components/DynamicManifest'
 
 function StoreGate() {
   const { business, loading } = useBusiness()
@@ -39,6 +40,7 @@ function StoreGate() {
 
   return (
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
+      <DynamicManifest />
       <Navbar />
       <main className="flex-1 overflow-x-hidden">
         <Outlet />
