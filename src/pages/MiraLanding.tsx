@@ -35,12 +35,20 @@ export default function MiraLanding() {
         <p className="mx-auto mt-4 max-w-md text-white/60">
           Create a storefront, add your products, and take orders on WhatsApp - no checkout, no complexity.
         </p>
-        <Link
-          to="/register"
-          className="mt-8 inline-block rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition-transform hover:scale-[1.02]"
-        >
-          Create your store
-        </Link>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/register"
+            className="inline-block rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition-transform hover:scale-[1.02]"
+          >
+            Create your store
+          </Link>
+          <Link
+            to="/store/trendthrift-wears"
+            className="inline-block rounded-full border border-white/20 px-8 py-3 text-sm font-medium text-white/80 hover:border-white/40 hover:text-white"
+          >
+            View an example store
+          </Link>
+        </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-5 pb-20">
