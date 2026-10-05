@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import StoreLayout from '@/layouts/StoreLayout'
 import AdminLayout from '@/layouts/AdminLayout'
 import MiraAdminLayout from '@/layouts/MiraAdminLayout'
+import MiraLanding from '@/pages/MiraLanding'
 import Home from '@/pages/Home'
 import Shop from '@/pages/Shop'
 import Saved from '@/pages/Saved'
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/store/trendthrift-wears" replace />} />
+      <Route path="/mira" element={<MiraLanding />} />
 
       <Route path="/store/:slug" element={<StoreLayout />}>
         <Route index element={<Home />} />
