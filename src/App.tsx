@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import StoreLayout from '@/layouts/StoreLayout'
 import AdminLayout from '@/layouts/AdminLayout'
 import MiraAdminLayout from '@/layouts/MiraAdminLayout'
@@ -22,8 +22,7 @@ import MiraProtectedRoute from '@/components/MiraProtectedRoute'
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/store/trendthrift-wears" replace />} />
-      <Route path="/mira" element={<MiraLanding />} />
+      <Route path="/" element={<MiraLanding />} />
 
       <Route path="/store/:slug" element={<StoreLayout />}>
         <Route index element={<Home />} />
