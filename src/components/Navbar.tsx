@@ -1,19 +1,22 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ShoppingBag } from 'lucide-react'
 import { useBusiness } from '@/contexts/BusinessContext'
+import { useCart } from '@/hooks/useCart'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
-  const { business, slug } = useBusiness()
+  const { business, slug, features } = useBusiness()
+  const { items } = useCart(business?.id)
+  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0)
 
   const links = [
-    { to: '/store/' + slug, label: 'Home', end: true },
-    { to: '/store/' + slug + '/shop', label: 'Shop', end: false },
-    { to: '/store/' + slug + '/saved', label: 'Saved', end: false },
-    { to: '/store/' + slug + '/about', label: 'About', end: false },
-    { to: '/store/' + slug + '/contact', label: 'Contact', end: false },
-  ]
+    { to: '/store/' + slug, label: 'Home', end: true, show: true },
+    { to: '/store/' + slug + '/shop', label: 'Shop', end: false, show: true },
+    { to: '/store/' + slug + '/saved', label: 'Saved', end: false, show: features.favorites },
+    { to: '/store/' + slug + '/about', label: 'About', end: false, show: true },
+    { to: '/store/' + slug + '/contact', label: 'Contact', end: false, show: true },
+  ].filter((l) => l.show)
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-paper/95 backdrop-blur">
@@ -22,7 +25,7 @@ export default function Navbar() {
           {business?.name ?? 'MIRA'}
         </Link>
 
-        <nav className="hidden gap-8 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {links.map((l) => (
             <NavLink
               key={l.to}
@@ -35,15 +38,36 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
+          {features.cart && (
+            <Link to={'/store/' + slug + '/cart'} className="relative text-stone hover:text-ink">
+              <ShoppingBag size={19} />
+              {cartCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-ink text-[10px] text-paper">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
         </nav>
 
-        <button
-          className="md:hidden"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-4 md:hidden">
+          {features.cart && (
+            <Link to={'/store/' + slug + '/cart'} className="relative text-ink">
+              <ShoppingBag size={21} />
+              {cartCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-ink text-[10px] text-paper">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
+          <button
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {open && (
