@@ -5,12 +5,13 @@ import { useBusiness } from '@/contexts/BusinessContext'
 import ProductGallery from '@/components/ProductGallery'
 import LikeButton from '@/components/LikeButton'
 import SaveButton from '@/components/SaveButton'
+import CartButton from '@/components/CartButton'
 import WhatsAppButton from '@/components/WhatsAppButton'
 
 export default function ProductDetails() {
   const { id } = useParams()
   const { product, loading } = useProduct(id)
-  const { business, slug } = useBusiness()
+  const { business, slug, features } = useBusiness()
 
   if (loading) return <p className="py-24 text-center text-stone">Loading...</p>
   if (!product) return <p className="py-24 text-center text-stone">Product not found.</p>
@@ -57,16 +58,21 @@ export default function ProductDetails() {
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <LikeButton productId={product.id} businessId={product.business_id} liked={!!product.liked_by_visitor} count={product.like_count} />
-            <SaveButton
-              product={{
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                category: product.category,
-                images: product.images,
-                status: product.status,
-              }}
-            />
+            {features.favorites && (
+              <SaveButton
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  category: product.category,
+                  images: product.images,
+                  status: product.status,
+                }}
+              />
+            )}
+            {features.cart && !sold && (
+              <CartButton businessId={product.business_id} product={product} />
+            )}
             {business?.whatsapp_number && (
               <WhatsAppButton product={product} whatsappNumber={business.whatsapp_number} businessId={product.business_id} soldOut={sold} full />
             )}
