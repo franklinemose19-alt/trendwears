@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { ImageOff } from 'lucide-react'
 import SaveButton from '@/components/SaveButton'
+import CartButton from '@/components/CartButton'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { useBusiness } from '@/contexts/BusinessContext'
 import type { ProductWithStats } from '@/types'
 
 export default function ProductCard({ product, whatsappNumber }: { product: ProductWithStats; whatsappNumber: string }) {
-  const { slug } = useBusiness()
+  const { slug, features } = useBusiness()
   const sold = product.status === 'sold'
   const hasImage = product.images.length > 0
 
@@ -41,17 +42,22 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
 
       <div className="mt-3 flex flex-col gap-2">
         <WhatsAppButton product={product} whatsappNumber={whatsappNumber} businessId={product.business_id} soldOut={sold} full />
-        <SaveButton
-          product={{
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            category: product.category,
-            images: product.images,
-            status: product.status,
-          }}
-          full
-        />
+        {features.cart && !sold && (
+          <CartButton businessId={product.business_id} product={product} full />
+        )}
+        {features.favorites && (
+          <SaveButton
+            product={{
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              category: product.category,
+              images: product.images,
+              status: product.status,
+            }}
+            full
+          />
+        )}
       </div>
     </div>
   )
