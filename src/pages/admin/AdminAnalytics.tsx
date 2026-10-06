@@ -1,21 +1,40 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchProductsWithStats, sortProducts } from '@/services/products'
 import { fetchViewsLast30Days } from '@/services/admin'
-import { fetchMyBusiness } from '@/services/businesses'
+import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
 import AnalyticsChart from '@/components/AnalyticsChart'
 import type { ProductWithStats } from '@/types'
 
 export default function AdminAnalytics() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [chartData, setChartData] = useState<{ date: string; views: number }[]>([])
+  const [allowed, setAllowed] = useState<boolean | null>(null)
 
   useEffect(() => {
-    fetchMyBusiness().then((business) => {
+    fetchMyBusiness().then(async (business) => {
       if (!business) return
+      const features = await fetchPlanFeatures(business.plan)
+      setAllowed(features.analytics)
+      if (!features.analytics) return
       fetchProductsWithStats(business.id).then(setProducts)
       fetchViewsLast30Days(business.id).then(setChartData)
     })
   }, [])
+
+  if (allowed === null) return <p className="text-white/50">Loading...</p>
+
+  if (!allowed) {
+    return (
+      <div className="rounded-2xl border border-white/10 p-8 text-center">
+        <h1 className="font-display text-xl">Analytics is a Pro feature</h1>
+        <p className="mt-2 text-sm text-white/50">Upgrade to the Pro plan to unlock sales and customer analytics.</p>
+        <Link to="/admin/settings" className="mt-6 inline-block rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-black">
+          View plan options
+        </Link>
+      </div>
+    )
+  }
 
   const mostViewed = sortProducts(products, 'most_viewed').slice(0, 5)
   const mostLiked = sortProducts(products, 'most_liked').slice(0, 5)
