@@ -6,6 +6,7 @@ import MiraLanding from '@/pages/MiraLanding'
 import Home from '@/pages/Home'
 import Shop from '@/pages/Shop'
 import Saved from '@/pages/Saved'
+import Cart from '@/pages/Cart'
 import ProductDetails from '@/pages/ProductDetails'
 import About from '@/pages/About'
 import Contact from '@/pages/Contact'
@@ -28,6 +29,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="shop" element={<Shop />} />
         <Route path="saved" element={<Saved />} />
+        <Route path="cart" element={<Cart />} />
         <Route path="product/:id" element={<ProductDetails />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
