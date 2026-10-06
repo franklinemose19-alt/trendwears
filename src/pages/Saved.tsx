@@ -7,7 +7,7 @@ import { recordWhatsAppClick } from '@/services/products'
 
 export default function Saved() {
   const { saved, remove } = useSavedProducts()
-  const { business, slug } = useBusiness()
+  const { business, slug, features, loading } = useBusiness()
   const whatsappNumber = business?.whatsapp_number ?? ''
 
   async function handleOrderOne(id: string, name: string, price: number) {
@@ -18,6 +18,20 @@ export default function Saved() {
   async function handleOrderAll() {
     if (business) await Promise.all(saved.map((p) => recordWhatsAppClick(p.id, business.id)))
     window.open(orderSavedProducts(saved, whatsappNumber), '_blank')
+  }
+
+  if (loading) return <p className="py-24 text-center text-stone">Loading...</p>
+
+  if (!features.favorites) {
+    return (
+      <div className="mx-auto max-w-md px-5 py-24 text-center">
+        <h1 className="font-display text-2xl text-ink">Saved items aren't available here</h1>
+        <p className="mt-2 text-stone">This store's current plan doesn't include saved items.</p>
+        <Link to={'/store/' + slug + '/shop'} className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper">
+          Browse Collection
+        </Link>
+      </div>
+    )
   }
 
   return (
