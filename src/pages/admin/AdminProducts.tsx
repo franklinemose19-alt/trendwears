@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { fetchProductsWithStats } from '@/services/products'
 import { createProduct, updateProduct, deleteProduct } from '@/services/admin'
-import { fetchMyBusiness } from '@/services/businesses'
+import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
 import ProductForm from '@/components/ProductForm'
 import type { Product, ProductWithStats } from '@/types'
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [businessId, setBusinessId] = useState<string | null>(null)
+  const [allowFlashSale, setAllowFlashSale] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
 
@@ -17,8 +18,12 @@ export default function AdminProducts() {
     const business = await fetchMyBusiness()
     setBusinessId(business?.id ?? null)
     if (business) {
-      const data = await fetchProductsWithStats(business.id)
+      const [data, features] = await Promise.all([
+        fetchProductsWithStats(business.id),
+        fetchPlanFeatures(business.plan),
+      ])
       setProducts(data)
+      setAllowFlashSale(features.flash_sales)
     }
     setLoading(false)
   }
@@ -70,6 +75,7 @@ export default function AdminProducts() {
           <ProductForm
             initial={editing === 'new' ? undefined : editing}
             submitLabel={editing === 'new' ? 'Publish' : 'Save changes'}
+            allowFlashSale={allowFlashSale}
             onSubmit={(data) => (editing === 'new' ? handleCreate(data) : handleUpdate((editing as Product).id, data))}
           />
         </div>
@@ -80,7 +86,12 @@ export default function AdminProducts() {
           <div key={p.id} className="flex items-center gap-4 rounded-xl border border-white/10 p-3">
             <img src={p.images[0]} className="h-14 w-14 rounded-lg object-cover" />
             <div className="flex-1">
-              <p className="text-sm font-medium">{p.name}</p>
+              <p className="text-sm font-medium">
+                {p.name}
+                {p.sale_price != null && p.sale_price < p.price && (
+                  <span className="ml-2 rounded-full bg-rust/20 px-2 py-0.5 text-xs text-rust">Flash Sale</span>
+                )}
+              </p>
               <p className="text-xs text-white/50">
                 KSh {p.price.toLocaleString()} - {p.status} - {p.view_count} views - {p.like_count} likes
               </p>
