@@ -7,9 +7,10 @@ import { useBusiness } from '@/contexts/BusinessContext'
 import type { ProductWithStats } from '@/types'
 
 export default function ProductCard({ product, whatsappNumber }: { product: ProductWithStats; whatsappNumber: string }) {
-  const { slug, features } = useBusiness()
+  const { slug, features, business } = useBusiness()
   const sold = product.status === 'sold'
   const hasImage = product.images.length > 0
+  const onSale = features.flash_sales && product.sale_price != null && product.sale_price < product.price
 
   return (
     <div className="group">
@@ -30,18 +31,38 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
               Sold
             </span>
           )}
+          {!sold && onSale && (
+            <span className="absolute left-3 top-3 rounded-full bg-rust px-3 py-1 text-xs text-paper">
+              Flash Sale
+            </span>
+          )}
         </div>
 
         <div className="mt-3 space-y-1">
           <h3 className="text-sm font-medium text-ink">{product.name}</h3>
-          <p className="text-sm text-stone">
-            KSh {product.price.toLocaleString()} - {product.category}
-          </p>
+          {onSale ? (
+            <p className="text-sm text-stone">
+              <span className="text-rust">KSh {product.sale_price!.toLocaleString()}</span>{' '}
+              <span className="line-through opacity-60">KSh {product.price.toLocaleString()}</span>{' '}
+              - {product.category}
+            </p>
+          ) : (
+            <p className="text-sm text-stone">
+              KSh {product.price.toLocaleString()} - {product.category}
+            </p>
+          )}
         </div>
       </Link>
 
       <div className="mt-3 flex flex-col gap-2">
-        <WhatsAppButton product={product} whatsappNumber={whatsappNumber} businessId={product.business_id} soldOut={sold} full />
+        <WhatsAppButton
+          product={product}
+          whatsappNumber={whatsappNumber}
+          businessId={product.business_id}
+          businessName={business?.name ?? ''}
+          soldOut={sold}
+          full
+        />
         {features.cart && !sold && (
           <CartButton businessId={product.business_id} product={product} full />
         )}
