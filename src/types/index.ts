@@ -1,7 +1,7 @@
 export type ProductStatus = 'available' | 'sold' | 'draft'
 export type BusinessStatus = 'active' | 'suspended' | 'pending'
 export type Plan = 'basic' | 'popular' | 'pro'
-export type FeatureName = 'cart' | 'favorites' | 'customer_accounts' | 'notifications' | 'promotions' | 'analytics' | 'advanced_customization'
+export type FeatureName = 'cart' | 'favorites' | 'customer_accounts' | 'notifications' | 'promotions' | 'analytics' | 'advanced_customization' | 'flash_sales' | 'in_app_payment'
 
 export interface Business {
   id: string
@@ -30,6 +30,7 @@ export interface Product {
   business_id: string
   name: string
   price: number
+  sale_price: number | null
   category: string
   size: string
   condition: string
@@ -67,4 +68,6 @@ export interface PlanFeatures {
   promotions: boolean
   analytics: boolean
   advanced_customization: boolean
+  flash_sales: boolean
+  in_app_payment: boolean
 }
