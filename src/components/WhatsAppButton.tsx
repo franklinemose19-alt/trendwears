@@ -4,17 +4,18 @@ import { orderProduct } from '@/utils/whatsapp'
 import type { Product } from '@/types'
 
 interface Props {
-  product: Pick<Product, 'id' | 'name' | 'price'>
+  product: Pick<Product, 'id' | 'name' | 'price' | 'sale_price'>
   whatsappNumber: string
   businessId: string
+  businessName: string
   full?: boolean
   soldOut?: boolean
 }
 
-export default function WhatsAppButton({ product, whatsappNumber, businessId, full, soldOut }: Props) {
+export default function WhatsAppButton({ product, whatsappNumber, businessId, businessName, full, soldOut }: Props) {
   async function handleClick() {
     await recordWhatsAppClick(product.id, businessId)
-    window.open(orderProduct(product, whatsappNumber), '_blank')
+    window.open(orderProduct(businessName, product, whatsappNumber), '_blank')
   }
 
   if (soldOut) {
