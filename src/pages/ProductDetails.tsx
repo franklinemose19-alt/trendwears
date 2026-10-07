@@ -17,6 +17,7 @@ export default function ProductDetails() {
   if (!product) return <p className="py-24 text-center text-stone">Product not found.</p>
 
   const sold = product.status === 'sold'
+  const onSale = features.flash_sales && product.sale_price != null && product.sale_price < product.price
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
@@ -28,8 +29,20 @@ export default function ProductDetails() {
         <ProductGallery images={product.images} alt={product.name} />
 
         <div>
+          {onSale && (
+            <span className="mb-2 inline-block rounded-full bg-rust px-3 py-1 text-xs text-paper">
+              Flash Sale
+            </span>
+          )}
           <h1 className="font-display text-3xl text-ink">{product.name}</h1>
-          <p className="mt-2 text-xl text-ink">KSh {product.price.toLocaleString()}</p>
+          {onSale ? (
+            <p className="mt-2 text-xl text-ink">
+              <span className="text-rust">KSh {product.sale_price!.toLocaleString()}</span>{' '}
+              <span className="text-base line-through opacity-50">KSh {product.price.toLocaleString()}</span>
+            </p>
+          ) : (
+            <p className="mt-2 text-xl text-ink">KSh {product.price.toLocaleString()}</p>
+          )}
 
           <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -74,7 +87,14 @@ export default function ProductDetails() {
               <CartButton businessId={product.business_id} product={product} />
             )}
             {business?.whatsapp_number && (
-              <WhatsAppButton product={product} whatsappNumber={business.whatsapp_number} businessId={product.business_id} soldOut={sold} full />
+              <WhatsAppButton
+                product={product}
+                whatsappNumber={business.whatsapp_number}
+                businessId={product.business_id}
+                businessName={business.name}
+                soldOut={sold}
+                full
+              />
             )}
           </div>
         </div>
