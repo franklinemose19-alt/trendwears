@@ -9,14 +9,16 @@ interface Props {
   initial?: Partial<Product>
   onSubmit: (data: ProductDraft) => Promise<void>
   submitLabel: string
+  allowFlashSale: boolean
 }
 
 const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes', 'Other']
 const conditions = ['Excellent', 'Good', 'Fair']
 
-export default function ProductForm({ initial, onSubmit, submitLabel }: Props) {
+export default function ProductForm({ initial, onSubmit, submitLabel, allowFlashSale }: Props) {
   const [name, setName] = useState(initial?.name ?? '')
   const [price, setPrice] = useState(initial?.price?.toString() ?? '')
+  const [salePrice, setSalePrice] = useState(initial?.sale_price?.toString() ?? '')
   const [category, setCategory] = useState(initial?.category ?? categories[0])
   const [size, setSize] = useState(initial?.size ?? '')
   const [condition, setCondition] = useState(initial?.condition ?? conditions[0])
@@ -46,6 +48,7 @@ export default function ProductForm({ initial, onSubmit, submitLabel }: Props) {
       await onSubmit({
         name,
         price: Number(price),
+        sale_price: allowFlashSale && salePrice ? Number(salePrice) : null,
         category,
         size,
         condition,
@@ -71,6 +74,21 @@ export default function ProductForm({ initial, onSubmit, submitLabel }: Props) {
           <label className="mb-1 block text-sm text-white/60">Price (KSh)</label>
           <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className={inputCls} />
         </div>
+
+        {allowFlashSale && (
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm text-white/60">Flash sale price (KSh, optional)</label>
+            <input
+              type="number"
+              value={salePrice}
+              onChange={(e) => setSalePrice(e.target.value)}
+              placeholder="Leave blank for no active sale"
+              className={inputCls}
+            />
+            <p className="mt-1 text-xs text-white/40">When set below the regular price, this product shows a Flash Sale badge storewide.</p>
+          </div>
+        )}
+
         <div>
           <label className="mb-1 block text-sm text-white/60">Category</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
