@@ -11,13 +11,15 @@ export default function Saved() {
   const whatsappNumber = business?.whatsapp_number ?? ''
 
   async function handleOrderOne(id: string, name: string, price: number) {
-    if (business) await recordWhatsAppClick(id, business.id)
-    window.open(orderProduct({ name, price }, whatsappNumber), '_blank')
+    if (!business) return
+    await recordWhatsAppClick(id, business.id)
+    window.open(orderProduct(business.name, { name, price, sale_price: null }, whatsappNumber), '_blank')
   }
 
   async function handleOrderAll() {
-    if (business) await Promise.all(saved.map((p) => recordWhatsAppClick(p.id, business.id)))
-    window.open(orderSavedProducts(saved, whatsappNumber), '_blank')
+    if (!business) return
+    await Promise.all(saved.map((p) => recordWhatsAppClick(p.id, business.id)))
+    window.open(orderSavedProducts(business.name, saved, whatsappNumber), '_blank')
   }
 
   if (loading) return <p className="py-24 text-center text-stone">Loading...</p>
