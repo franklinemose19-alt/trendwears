@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Trash2, Minus, Plus, MessageCircle } from 'lucide-react'
+import { Trash2, Minus, Plus, MessageCircle, CreditCard } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { useBusiness } from '@/contexts/BusinessContext'
 import { orderCart } from '@/utils/whatsapp'
@@ -9,10 +10,15 @@ export default function Cart() {
   const { business, slug, features, loading } = useBusiness()
   const { items, setQuantity, remove, clear } = useCart(business?.id)
   const subtotal = cartSubtotal(items)
+  const [payNotice, setPayNotice] = useState(false)
 
   function handleCheckout() {
     if (!business?.whatsapp_number) return
     window.open(orderCart(business.name, items, business.whatsapp_number), '_blank')
+  }
+
+  function handlePayNow() {
+    setPayNotice(true)
   }
 
   if (loading) return <p className="py-24 text-center text-stone">Loading...</p>
@@ -80,7 +86,24 @@ export default function Cart() {
             <span className="text-lg font-medium text-ink">KSh {subtotal.toLocaleString()}</span>
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          {features.in_app_payment && (
+            <div className="mt-4">
+              <button
+                onClick={handlePayNow}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper"
+              >
+                <CreditCard size={16} />
+                Pay Now with M-Pesa
+              </button>
+              {payNotice && (
+                <p className="mt-2 text-center text-xs text-stone">
+                  In-app M-Pesa payment is coming soon. Use WhatsApp checkout below for now.
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row">
             <button
               onClick={handleCheckout}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-moss px-6 py-3 text-sm font-medium text-paper"
