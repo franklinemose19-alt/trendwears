@@ -1,23 +1,27 @@
 import { Link } from 'react-router-dom'
-import { Check } from 'lucide-react'
+import { Check, Lock } from 'lucide-react'
 
-const plans = [
-  {
-    name: 'Basic',
-    price: 'KSh 3,000',
-    features: ['Branded storefront', 'Business profile', 'Product catalog & images', 'WhatsApp ordering', 'Add to Home Screen'],
-  },
-  {
-    name: 'Popular',
-    price: 'KSh 5,500',
-    features: ['Everything in Basic', 'Cart', 'Favourites', 'Customer accounts', 'Push notifications', 'Promotions & discounts'],
-    highlighted: true,
-  },
-  {
-    name: 'Pro',
-    price: 'KSh 8,500',
-    features: ['Everything in Popular', 'Sales analytics', 'Customer analytics', 'Advanced customization', 'Priority support'],
-  },
+const basicFeatures = [
+  'Online product catalogue',
+  'Product images and details',
+  'WhatsApp ordering',
+  'Mobile-friendly design',
+  'About & Contact section',
+  'Basic customization',
+  'Hosting and website maintenance included',
+]
+
+const popularFeatures = [
+  'Everything in Basic',
+  'Product categories',
+  'Search and filtering',
+  'Featured products',
+  'Better product organization',
+  'Customer inquiry features',
+  'Analytics',
+  'Custom branding',
+  'More advanced customization',
+  'Hosting and website maintenance included',
 ]
 
 export default function MiraLanding() {
@@ -52,27 +56,52 @@ export default function MiraLanding() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 pb-20">
-        <div className="grid gap-5 md:grid-cols-3">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={
-                'rounded-2xl border p-6 ' +
-                (plan.highlighted ? 'border-white/30 bg-white/5' : 'border-white/10')
-              }
-            >
-              <p className="text-sm text-white/60">{plan.name}</p>
-              <p className="mt-1 text-2xl font-medium">{plan.price}<span className="text-sm text-white/40">/mo</span></p>
-              <ul className="mt-5 space-y-2.5">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-white/70">
-                    <Check size={15} className="mt-0.5 shrink-0 text-white/40" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
+        <h2 className="mb-8 text-center font-display text-2xl">Pricing</h2>
+        <div className="grid items-start gap-5 md:grid-cols-3">
+          {/* BASIC */}
+          <div className="rounded-2xl border border-white/10 p-6">
+            <p className="text-sm text-white/60">Basic</p>
+            <p className="mt-1 text-2xl font-medium">KSh 2,999<span className="text-sm text-white/40">/month</span></p>
+            <p className="mt-2 text-xs text-white/50">For small boutiques and businesses getting started online.</p>
+            <ul className="mt-5 space-y-2.5">
+              {basicFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-white/70">
+                  <Check size={15} className="mt-0.5 shrink-0 text-white/40" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* POPULAR - stands out */}
+          <div className="relative rounded-2xl border-2 border-white bg-white/5 p-6 shadow-[0_0_30px_-10px_rgba(255,255,255,0.3)]">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
+              ⭐ Recommended
+            </span>
+            <p className="text-sm text-white/70">Popular</p>
+            <p className="mt-1 text-2xl font-medium">KSh 4,999<span className="text-sm text-white/40">/month</span></p>
+            <p className="mt-2 text-xs text-white/60">For boutiques that want a more complete online shopping experience.</p>
+            <ul className="mt-5 space-y-2.5">
+              {popularFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-white/80">
+                  <Check size={15} className="mt-0.5 shrink-0 text-white" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* PRO - locked, coming soon */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-6 opacity-60">
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-white/50">Pro</p>
+              <Lock size={13} className="text-white/30" />
             </div>
-          ))}
+            <p className="mt-1 text-xl font-medium text-white/50">Coming Soon</p>
+            <p className="mt-4 text-sm text-white/40">
+              Advanced e-commerce tools and powerful business features are coming soon.
+            </p>
+          </div>
         </div>
       </section>
 
