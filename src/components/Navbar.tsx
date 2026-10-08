@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { Menu, X, ShoppingBag } from 'lucide-react'
 import { useBusiness } from '@/contexts/BusinessContext'
 import { useCart } from '@/hooks/useCart'
+import InstallButton from '@/components/InstallButton'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
@@ -38,6 +39,7 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
+          <InstallButton businessName={business?.name ?? 'this store'} />
           {features.cart && (
             <Link to={'/store/' + slug + '/cart'} className="relative text-stone hover:text-ink">
               <ShoppingBag size={19} />
@@ -50,7 +52,8 @@ export default function Navbar() {
           )}
         </nav>
 
-        <div className="flex items-center gap-4 md:hidden">
+        <div className="flex items-center gap-3 md:hidden">
+          <InstallButton businessName={business?.name ?? 'this store'} />
           {features.cart && (
             <Link to={'/store/' + slug + '/cart'} className="relative text-ink">
               <ShoppingBag size={21} />
