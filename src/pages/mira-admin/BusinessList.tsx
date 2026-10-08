@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, ExternalLink } from 'lucide-react'
-import { fetchAllBusinesses, updateBusinessStatus, updateBusinessPlan } from '@/services/businesses'
+import { Search, ExternalLink, CheckCircle2 } from 'lucide-react'
+import { fetchAllBusinesses, updateBusinessStatus, updateBusinessPlan, markBusinessPaid } from '@/services/businesses'
+import { getSubscriptionState } from '@/utils/subscription'
+import SubscriptionCountdown from '@/components/SubscriptionCountdown'
 import type { Business, BusinessStatus, Plan } from '@/types'
 
 const statusStyles: Record<BusinessStatus, string> = {
@@ -39,6 +41,12 @@ export default function BusinessList() {
     load()
   }
 
+  async function handleMarkPaid(business: Business) {
+    if (!confirm('Record a payment for ' + business.name + '? This activates the store and gives it one more month.')) return
+    await markBusinessPaid(business)
+    load()
+  }
+
   return (
     <div>
       <h1 className="font-display text-2xl">Businesses</h1>
@@ -58,72 +66,86 @@ export default function BusinessList() {
         <p className="mt-8 text-white/50">Loading...</p>
       ) : (
         <div className="mt-6 space-y-3">
-          {filtered.map((b) => (
-            <div key={b.id} className="rounded-xl border border-white/10 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {b.logo_url ? (
-                    <img src={b.logo_url} className="h-10 w-10 rounded-lg object-cover" />
-                  ) : (
-                    <div className="h-10 w-10 rounded-lg bg-white/10" />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">{b.name}</p>
-                    <p className="text-xs text-white/40">/{b.slug}</p>
+          {filtered.map((b) => {
+            const sub = getSubscriptionState(b)
+            const locked = b.status === 'active' && sub.state !== 'active'
+            const statusLabel = locked ? 'locked - unpaid' : b.status
+            const statusClass = locked ? statusStyles.suspended : statusStyles[b.status]
+
+            return (
+              <div key={b.id} className="rounded-xl border border-white/10 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 font-display text-lg">
+                      {b.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{b.name}</p>
+                      <p className="text-xs text-white/40">/{b.slug}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={'rounded-full px-3 py-1 text-xs capitalize ' + statusClass}>
+                      {statusLabel}
+                    </span>
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs capitalize text-white/70">
+                      {b.plan}
+                    </span>
+                    <a
+                      href={'/store/' + b.slug}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 rounded-full border border-white/15 px-3 py-1 text-xs text-white/70 hover:text-white"
+                    >
+                      <ExternalLink size={12} /> View store
+                    </a>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={'rounded-full px-3 py-1 text-xs capitalize ' + statusStyles[b.status]}>
-                    {b.status}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs capitalize text-white/70">
-                    {b.plan}
-                  </span>
-                  <span className={'rounded-full px-3 py-1 text-xs ' + (b.subscription_status === 'paid' ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400')}>
-                    {b.subscription_status}
-                  </span>
-                  <a
-                    href={'/store/' + b.slug}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1 rounded-full border border-white/15 px-3 py-1 text-xs text-white/70 hover:text-white"
+                <div className="mt-3">
+                  <SubscriptionCountdown nextBillingDate={b.next_billing_date} />
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/5 pt-4">
+                  <select
+                    value={b.plan}
+                    onChange={(e) => handlePlanChange(b, e.target.value as Plan)}
+                    className="rounded-lg border border-white/15 bg-transparent px-3 py-1.5 text-xs"
                   >
-                    <ExternalLink size={12} /> View store
-                  </a>
+                    <option value="basic">Basic</option>
+                    <option value="popular">Popular</option>
+                    <option value="pro">Pro</option>
+                  </select>
+
+                  <button
+                    onClick={() => handleMarkPaid(b)}
+                    className="flex items-center gap-1.5 rounded-lg bg-green-500/15 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/25"
+                  >
+                    <CheckCircle2 size={13} />
+                    Mark as paid (+1 month)
+                  </button>
+
+                  {b.status !== 'active' && (
+                    <button
+                      onClick={() => handleStatusChange(b, 'active')}
+                      className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white/80 hover:bg-white/15"
+                    >
+                      Activate
+                    </button>
+                  )}
+                  {b.status !== 'suspended' && (
+                    <button
+                      onClick={() => handleStatusChange(b, 'suspended')}
+                      className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/25"
+                    >
+                      Suspend
+                    </button>
+                  )}
                 </div>
               </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/5 pt-4">
-                <select
-                  value={b.plan}
-                  onChange={(e) => handlePlanChange(b, e.target.value as Plan)}
-                  className="rounded-lg border border-white/15 bg-transparent px-3 py-1.5 text-xs"
-                >
-                  <option value="basic">Basic</option>
-                  <option value="popular">Popular</option>
-                  <option value="pro">Pro</option>
-                </select>
-
-                {b.status !== 'active' && (
-                  <button
-                    onClick={() => handleStatusChange(b, 'active')}
-                    className="rounded-lg bg-green-500/15 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/25"
-                  >
-                    Activate
-                  </button>
-                )}
-                {b.status !== 'suspended' && (
-                  <button
-                    onClick={() => handleStatusChange(b, 'suspended')}
-                    className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/25"
-                  >
-                    Suspend
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
 
           {filtered.length === 0 && <p className="text-white/50">No businesses match your search.</p>}
         </div>
