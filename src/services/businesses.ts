@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { addOneMonth } from '@/utils/subscription'
 import type { Business, BusinessStatus, Plan, PlanFeatures } from '@/types'
 
 export async function fetchBusinessBySlug(slug: string): Promise<Business | null> {
@@ -32,6 +33,21 @@ export async function updateBusinessStatus(id: string, status: BusinessStatus): 
 
 export async function updateBusinessPlan(id: string, plan: Plan): Promise<void> {
   await updateBusiness(id, { plan })
+}
+
+// Records a payment: activates the store and gives it one more month.
+// If the store is still paid up, the month is added to the current end date so no paid days are lost.
+// If it already expired, the new month starts from now.
+export async function markBusinessPaid(business: Business): Promise<void> {
+  const now = new Date()
+  const currentEnd = business.next_billing_date ? new Date(business.next_billing_date) : null
+  const base = currentEnd && currentEnd > now ? currentEnd : now
+
+  await updateBusiness(business.id, {
+    subscription_status: 'paid',
+    next_billing_date: addOneMonth(base).toISOString(),
+    status: 'active',
+  })
 }
 
 export async function fetchPlanFeatures(plan: Plan): Promise<PlanFeatures> {
