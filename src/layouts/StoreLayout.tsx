@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { BusinessProvider, useBusiness } from '@/contexts/BusinessContext'
+import { getSubscriptionState } from '@/utils/subscription'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import DynamicManifest from '@/components/DynamicManifest'
@@ -34,6 +35,15 @@ function StoreGate() {
       <div className="flex min-h-screen flex-col items-center justify-center px-5 text-center">
         <h1 className="font-display text-2xl text-ink">Coming soon</h1>
         <p className="mt-2 max-w-sm text-stone">{business.name} is still setting up their storefront.</p>
+      </div>
+    )
+  }
+
+  if (getSubscriptionState(business).state !== 'active') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-5 text-center">
+        <h1 className="font-display text-2xl text-ink">Store temporarily unavailable</h1>
+        <p className="mt-2 max-w-sm text-stone">{business.name} isn't accepting orders right now. Please check back soon.</p>
       </div>
     )
   }
