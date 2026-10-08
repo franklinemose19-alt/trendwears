@@ -15,6 +15,14 @@ export default async function handler(req, res) {
   res.status(400).json({ error: 'Unknown action' })
 }
 
+function guessIconType(url) {
+  const lower = url.toLowerCase().split('?')[0]
+  if (lower.endsWith('.png')) return 'image/png'
+  if (lower.endsWith('.webp')) return 'image/webp'
+  if (lower.endsWith('.svg')) return 'image/svg+xml'
+  return 'image/jpeg'
+}
+
 async function handleManifest(req, res) {
   const { slug } = req.query
   if (!slug) {
@@ -29,21 +37,35 @@ async function handleManifest(req, res) {
     .maybeSingle()
 
   const name = business?.name || 'MIRA Store'
-  const icon = business?.logo_url || 'https://trendwears.vercel.app/favicon.svg'
+  const storeSlug = business?.slug || slug
+  const host = req.headers['x-forwarded-host'] || req.headers.host
+  const origin = 'https://' + host
+
+  let icons
+  if (business?.logo_url) {
+    const type = guessIconType(business.logo_url)
+    icons = [
+      { src: business.logo_url, sizes: '192x192', type: type, purpose: 'any' },
+      { src: business.logo_url, sizes: '512x512', type: type, purpose: 'any' },
+    ]
+  } else {
+    icons = [
+      { src: origin + '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: origin + '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    ]
+  }
 
   const manifest = {
+    id: '/store/' + storeSlug,
     name: name,
     short_name: name.length > 12 ? name.slice(0, 12) : name,
     description: name + ' - Powered by MIRA',
-    start_url: '/store/' + (business?.slug || slug),
-    scope: '/store/' + (business?.slug || slug),
+    start_url: '/store/' + storeSlug,
+    scope: '/store/' + storeSlug,
     display: 'standalone',
     background_color: '#faf9f6',
     theme_color: '#141414',
-    icons: [
-      { src: icon, sizes: '192x192', type: 'image/png' },
-      { src: icon, sizes: '512x512', type: 'image/png' },
-    ],
+    icons: icons,
   }
 
   res.setHeader('Content-Type', 'application/manifest+json')
