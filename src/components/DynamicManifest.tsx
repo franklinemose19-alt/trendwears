@@ -15,15 +15,14 @@ export default function DynamicManifest() {
     }
     manifestLink.href = '/api/platform?action=manifest&slug=' + slug
 
+    // Every store uses the same MIRA "M" app icon.
     let appleIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement | null
     if (!appleIcon) {
       appleIcon = document.createElement('link')
       appleIcon.rel = 'apple-touch-icon'
       document.head.appendChild(appleIcon)
     }
-    if (business.logo_url) {
-      appleIcon.href = business.logo_url
-    }
+    appleIcon.href = '/icon-192.png'
 
     let themeColor = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
     if (!themeColor) {
