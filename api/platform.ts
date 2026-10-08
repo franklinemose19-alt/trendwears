@@ -15,14 +15,6 @@ export default async function handler(req, res) {
   res.status(400).json({ error: 'Unknown action' })
 }
 
-function guessIconType(url) {
-  const lower = url.toLowerCase().split('?')[0]
-  if (lower.endsWith('.png')) return 'image/png'
-  if (lower.endsWith('.webp')) return 'image/webp'
-  if (lower.endsWith('.svg')) return 'image/svg+xml'
-  return 'image/jpeg'
-}
-
 async function handleManifest(req, res) {
   const { slug } = req.query
   if (!slug) {
@@ -32,7 +24,7 @@ async function handleManifest(req, res) {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name, logo_url, slug')
+    .select('name, slug')
     .eq('slug', slug)
     .maybeSingle()
 
@@ -41,19 +33,11 @@ async function handleManifest(req, res) {
   const host = req.headers['x-forwarded-host'] || req.headers.host
   const origin = 'https://' + host
 
-  let icons
-  if (business?.logo_url) {
-    const type = guessIconType(business.logo_url)
-    icons = [
-      { src: business.logo_url, sizes: '192x192', type: type, purpose: 'any' },
-      { src: business.logo_url, sizes: '512x512', type: type, purpose: 'any' },
-    ]
-  } else {
-    icons = [
-      { src: origin + '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: origin + '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-    ]
-  }
+  // Every store gets the same MIRA "M" icon; the store name is the only thing that differs.
+  const icons = [
+    { src: origin + '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+    { src: origin + '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+  ]
 
   const manifest = {
     id: '/store/' + storeSlug,
