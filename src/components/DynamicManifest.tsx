@@ -31,9 +31,10 @@ export default function DynamicManifest() {
       document.head.appendChild(themeColor)
     }
     themeColor.content = '#141414'
-
     document.title = business.name
-  }, [business, slug])
 
-  return null
-}
+    return () => {
+      document.title = 'MIRA'
+    }
+  }, [business, slug])
+    
