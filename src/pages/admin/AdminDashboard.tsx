@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Check, Lock } from 'lucide-react'
+import { Check, Lock, MessageCircle } from 'lucide-react'
 import { fetchOverviewStats } from '@/services/admin'
 import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
 import { getSubscriptionState } from '@/utils/subscription'
+import { PLAN_PRICES, supportWhatsAppUrl } from '@/config'
+import PayInstructions from '@/components/PayInstructions'
 import StatsCard from '@/components/StatsCard'
 import ShareStoreCard from '@/components/ShareStoreCard'
 import SubscriptionCountdown from '@/components/SubscriptionCountdown'
@@ -64,6 +66,23 @@ export default function AdminDashboard() {
             <SubscriptionCountdown nextBillingDate={business.next_billing_date} />
           </div>
           {notice && <p className="mt-3 text-sm text-red-400">{notice}</p>}
+
+          {business.plan !== 'pro' && (
+            <PayInstructions
+              planName={business.plan === 'popular' ? 'Popular' : 'Basic'}
+              amount={PLAN_PRICES[business.plan]}
+            />
+          )}
+
+          <a
+            href={supportWhatsAppUrl('Hi MIRA, I need help with my store: ' + business.name)}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white"
+          >
+            <MessageCircle size={13} />
+            Need help? Chat with MIRA support
+          </a>
         </div>
       )}
 
