@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
+// "Admin" here means: this signed-in user owns a store on MIRA.
 export function useIsAdmin() {
   const { session, loading: authLoading } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
@@ -15,9 +16,9 @@ export function useIsAdmin() {
       return
     }
     supabase
-      .from('admin_users')
-      .select('user_id')
-      .eq('user_id', session.user.id)
+      .from('businesses')
+      .select('id')
+      .eq('owner_user_id', session.user.id)
       .maybeSingle()
       .then(({ data }) => {
         setIsAdmin(!!data)
