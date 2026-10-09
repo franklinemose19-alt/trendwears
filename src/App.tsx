@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Link } from 'react-router-dom'
 import StoreLayout from '@/layouts/StoreLayout'
 import AdminLayout from '@/layouts/AdminLayout'
 import MiraAdminLayout from '@/layouts/MiraAdminLayout'
@@ -19,6 +19,18 @@ import AdminSettings from '@/pages/admin/AdminSettings'
 import BusinessList from '@/pages/mira-admin/BusinessList'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import MiraProtectedRoute from '@/components/MiraProtectedRoute'
+
+function NotFound() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0b] px-5 text-center text-[#e8e8e6]">
+      <h1 className="font-display text-2xl">Page not found</h1>
+      <p className="mt-2 text-white/60">That page doesn't exist.</p>
+      <Link to="/" className="mt-6 rounded-full bg-white px-6 py-3 text-sm font-medium text-black">
+        Go to MIRA home
+      </Link>
+    </div>
+  )
+}
 
 export default function App() {
   return (
@@ -62,6 +74,8 @@ export default function App() {
       >
         <Route index element={<BusinessList />} />
       </Route>
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }
