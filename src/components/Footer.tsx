@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
-import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { useAuth } from '@/hooks/useAuth'
 import { useBusiness } from '@/contexts/BusinessContext'
 
 export default function Footer() {
-  const { isAdmin } = useIsAdmin()
+  const { session } = useAuth()
   const { business, slug } = useBusiness()
+  const isOwner = !!session && !!business && business.owner_user_id === session.user.id
 
   return (
     <footer className="border-t border-ink/10 py-10">
@@ -15,11 +16,10 @@ export default function Footer() {
         </p>
         <div className="mt-2 flex gap-6 text-sm text-stone">
           <Link to={'/store/' + slug + '/shop'} className="hover:text-ink">Shop</Link>
-          <Link to={'/store/' + slug + '/saved'} className="hover:text-ink">Saved</Link>
           <Link to={'/store/' + slug + '/about'} className="hover:text-ink">About</Link>
           <Link to={'/store/' + slug + '/contact'} className="hover:text-ink">Contact</Link>
         </div>
-        {isAdmin && (
+        {isOwner && (
           <Link to="/admin" className="mt-4 text-xs text-stone/50 hover:text-stone">
             Admin
           </Link>
