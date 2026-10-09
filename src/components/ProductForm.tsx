@@ -10,6 +10,7 @@ interface Props {
   onSubmit: (data: ProductDraft) => Promise<void>
   submitLabel: string
   allowFlashSale: boolean
+    businessId: string | null
 }
 
 const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes', 'Other']
