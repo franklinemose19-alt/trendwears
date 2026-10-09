@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Check, Lock } from 'lucide-react'
+import { PLAN_PRICES } from '@/config'
+import HelplineButton from '@/components/HelplineButton'
+import PayInstructions from '@/components/PayInstructions'
 
 const basicFeatures = [
   'Online product catalogue',
@@ -46,12 +49,6 @@ export default function MiraLanding() {
           >
             Create your store
           </Link>
-          <Link
-            to="/store/trendthrift-wears"
-            className="inline-block rounded-full border border-white/20 px-8 py-3 text-sm font-medium text-white/80 hover:border-white/40 hover:text-white"
-          >
-            View an example store
-          </Link>
         </div>
       </section>
 
@@ -61,7 +58,9 @@ export default function MiraLanding() {
           {/* BASIC */}
           <div className="rounded-2xl border border-white/10 p-6">
             <p className="text-sm text-white/60">Basic</p>
-            <p className="mt-1 text-2xl font-medium">KSh 2,999<span className="text-sm text-white/40">/month</span></p>
+            <p className="mt-1 text-2xl font-medium">
+              KSh {PLAN_PRICES.basic.toLocaleString()}<span className="text-sm text-white/40">/month</span>
+            </p>
             <p className="mt-2 text-xs text-white/50">For small boutiques and businesses getting started online.</p>
             <ul className="mt-5 space-y-2.5">
               {basicFeatures.map((f) => (
@@ -71,15 +70,18 @@ export default function MiraLanding() {
                 </li>
               ))}
             </ul>
+            <PayInstructions planName="Basic" amount={PLAN_PRICES.basic} />
           </div>
 
           {/* POPULAR - stands out */}
           <div className="relative rounded-2xl border-2 border-white bg-white/5 p-6 shadow-[0_0_30px_-10px_rgba(255,255,255,0.3)]">
             <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
-              ⭐ Recommended
+              {'\u2B50 Recommended'}
             </span>
             <p className="text-sm text-white/70">Popular</p>
-            <p className="mt-1 text-2xl font-medium">KSh 4,999<span className="text-sm text-white/40">/month</span></p>
+            <p className="mt-1 text-2xl font-medium">
+              KSh {PLAN_PRICES.popular.toLocaleString()}<span className="text-sm text-white/40">/month</span>
+            </p>
             <p className="mt-2 text-xs text-white/60">For boutiques that want a more complete online shopping experience.</p>
             <ul className="mt-5 space-y-2.5">
               {popularFeatures.map((f) => (
@@ -89,6 +91,7 @@ export default function MiraLanding() {
                 </li>
               ))}
             </ul>
+            <PayInstructions planName="Popular" amount={PLAN_PRICES.popular} />
           </div>
 
           {/* PRO - locked, coming soon */}
@@ -108,6 +111,8 @@ export default function MiraLanding() {
       <footer className="border-t border-white/10 py-8 text-center text-xs text-white/40">
         MIRA · Built by FRANK DAVINCI TECHNOLOGIES
       </footer>
+
+      <HelplineButton />
     </div>
   )
 }
