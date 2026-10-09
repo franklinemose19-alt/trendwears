@@ -10,6 +10,7 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [allowFlashSale, setAllowFlashSale] = useState(false)
+              businessId={businessId}
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
 
