@@ -12,19 +12,17 @@ const links = [
 interface Props {
   open: boolean
   onClose: () => void
+  businessName: string
+  storePath: string
 }
 
-export default function AdminSidebar({ open, onClose }: Props) {
+export default function AdminSidebar({ open, onClose, businessName, storePath }: Props) {
   const { signOut } = useAuth()
   const navigate = useNavigate()
 
   async function handleLogout() {
     await signOut()
-        navigate('/login')
-  }
-
-  function handleNavClick() {
-    onClose()
+    navigate('/login')
   }
 
   return (
@@ -43,14 +41,14 @@ export default function AdminSidebar({ open, onClose }: Props) {
         }
       >
         <div className="mb-8 flex items-center justify-between">
-          <span className="font-display text-lg">TRENDTHRIFT WEARS</span>
+          <span className="font-display text-lg">{businessName}</span>
           <button onClick={onClose} className="text-white/60 hover:text-white md:hidden">
             <X size={20} />
           </button>
         </div>
 
         <button
-          onClick={() => { navigate('/shop'); onClose() }}
+          onClick={() => { navigate(storePath); onClose() }}
           className="mb-6 flex items-center gap-3 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
         >
           <ArrowLeftCircle size={17} />
@@ -63,7 +61,7 @@ export default function AdminSidebar({ open, onClose }: Props) {
               key={to}
               to={to}
               end={end}
-              onClick={handleNavClick}
+              onClick={onClose}
               className={({ isActive }) =>
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ' +
                 (isActive ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white')
