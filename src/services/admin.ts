@@ -37,14 +37,15 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) throw error
 }
 
-export async function uploadProductImage(file: File): Promise<string> {
+export async function uploadProductImage(file: File, businessId: string): Promise<string> {
   const ext = file.name.split('.').pop()
-  const path = 'products/' + crypto.randomUUID() + '.' + ext
+  const path = 'businesses/' + businessId + '/' + crypto.randomUUID() + '.' + ext
   const { error } = await supabase.storage.from('product-images').upload(path, file, { cacheControl: '3600', upsert: false })
   if (error) throw error
   const { data } = supabase.storage.from('product-images').getPublicUrl(path)
   return data.publicUrl
 }
+
 
 export async function fetchViewsLast30Days(businessId: string): Promise<{ date: string; views: number }[]> {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
