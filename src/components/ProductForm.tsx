@@ -16,7 +16,7 @@ interface Props {
 const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes', 'Other']
 const conditions = ['Excellent', 'Good', 'Fair']
 
-export default function ProductForm({ initial, onSubmit, submitLabel, allowFlashSale }: Props) {
+export default function ProductForm({ initial, onSubmit, submitLabel, allowFlashSale, businessId }: Props) {
   const [name, setName] = useState(initial?.name ?? '')
   const [price, setPrice] = useState(initial?.price?.toString() ?? '')
   const [salePrice, setSalePrice] = useState(initial?.sale_price?.toString() ?? '')
@@ -31,9 +31,13 @@ export default function ProductForm({ initial, onSubmit, submitLabel, allowFlash
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList) return
+    if (!businessId) {
+      alert('Your store is still loading. Please try again in a moment.')
+      return
+    }
     setUploading(true)
     try {
-      const urls = await Promise.all(Array.from(fileList).map(uploadProductImage))
+      const urls = await Promise.all(Array.from(fileList).map((f) => uploadProductImage(f, businessId)))
       setImages((prev) => [...prev, ...urls])
     } catch (err: any) {
       alert('Image upload failed: ' + (err?.message ?? 'unknown error') + '. Check that the "product-images" Storage bucket exists and is Public.')
