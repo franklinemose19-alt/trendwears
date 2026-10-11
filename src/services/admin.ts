@@ -46,7 +46,6 @@ export async function uploadProductImage(file: File, businessId: string): Promis
   return data.publicUrl
 }
 
-
 export async function fetchViewsLast30Days(businessId: string): Promise<{ date: string; views: number }[]> {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const { data, error } = await supabase.from('product_views').select('created_at').eq('business_id', businessId).gte('created_at', since)
