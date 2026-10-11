@@ -10,7 +10,6 @@ export default function AdminProducts() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [allowFlashSale, setAllowFlashSale] = useState(false)
-              businessId={businessId}
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
 
@@ -77,6 +76,7 @@ export default function AdminProducts() {
             initial={editing === 'new' ? undefined : editing}
             submitLabel={editing === 'new' ? 'Publish' : 'Save changes'}
             allowFlashSale={allowFlashSale}
+            businessId={businessId}
             onSubmit={(data) => (editing === 'new' ? handleCreate(data) : handleUpdate((editing as Product).id, data))}
           />
         </div>
