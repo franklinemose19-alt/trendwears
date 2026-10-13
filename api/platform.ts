@@ -33,6 +33,9 @@ async function handleManifest(req, res) {
   const host = req.headers['x-forwarded-host'] || req.headers.host
   const origin = 'https://' + host
 
+  // The trailing slash keeps this app limited to this one store (/store/abc must not cover /store/abcd).
+  const storePath = '/store/' + storeSlug + '/'
+
   // Every store gets the same MIRA "M" icon; the store name is the only thing that differs.
   const icons = [
     { src: origin + '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
@@ -40,12 +43,12 @@ async function handleManifest(req, res) {
   ]
 
   const manifest = {
-    id: '/store/' + storeSlug,
+    id: storePath,
     name: name,
     short_name: name.length > 12 ? name.slice(0, 12) : name,
     description: name + ' - Powered by MIRA',
-    start_url: '/store/' + storeSlug,
-    scope: '/store/' + storeSlug,
+    start_url: storePath,
+    scope: storePath,
     display: 'standalone',
     background_color: '#faf9f6',
     theme_color: '#141414',
