@@ -6,7 +6,7 @@ import Footer from '@/components/Footer'
 import DynamicManifest from '@/components/DynamicManifest'
 
 function StoreGate() {
-  const { business, loading } = useBusiness()
+  const { business, loading, features } = useBusiness()
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-stone">Loading...</div>
@@ -50,7 +50,7 @@ function StoreGate() {
 
   return (
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
-      <DynamicManifest />
+      <DynamicManifest installable={features.installable_store} />
       <Navbar />
       <main className="flex-1 overflow-x-hidden">
         <Outlet />
