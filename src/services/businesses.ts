@@ -64,6 +64,7 @@ export async function fetchPlanFeatures(plan: Plan): Promise<PlanFeatures> {
     advanced_customization: false,
     flash_sales: false,
     in_app_payment: false,
+    installable_store: false,
   }
   ;(data ?? []).forEach((row) => {
     if (row.feature in features) {
