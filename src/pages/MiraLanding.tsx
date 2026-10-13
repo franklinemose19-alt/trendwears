@@ -1,8 +1,11 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, Lock } from 'lucide-react'
+import { Check, Lock, Smartphone } from 'lucide-react'
 import { PLAN_PRICES } from '@/config'
 import HelplineButton from '@/components/HelplineButton'
 import PayInstructions from '@/components/PayInstructions'
+import InstallButton from '@/components/InstallButton'
+import { activateManifest, MIRA_MANIFEST_HREF } from '@/utils/installPrompt'
 
 const basicFeatures = [
   'Online product catalogue',
@@ -28,11 +31,16 @@ const popularFeatures = [
 ]
 
 export default function MiraLanding() {
+  useEffect(() => activateManifest(MIRA_MANIFEST_HREF), [])
+
   return (
     <div className="min-h-screen bg-[#0a0a0b] text-[#e8e8e6]">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6">
         <span className="font-display text-xl">MIRA</span>
-        <Link to="/login" className="text-sm text-white/70 hover:text-white">Sign in</Link>
+        <div className="flex items-center gap-4">
+          <InstallButton manifestHref={MIRA_MANIFEST_HREF} label="Install MIRA" variant="dark" />
+          <Link to="/login" className="text-sm text-white/70 hover:text-white">Sign in</Link>
+        </div>
       </header>
 
       <section className="mx-auto max-w-2xl px-5 pb-16 pt-10 text-center">
@@ -83,6 +91,16 @@ export default function MiraLanding() {
               KSh {PLAN_PRICES.popular.toLocaleString()}<span className="text-sm text-white/40">/month</span>
             </p>
             <p className="mt-2 text-xs text-white/60">For boutiques that want a more complete online shopping experience.</p>
+            <div className="mt-5 flex items-start gap-3 rounded-lg border border-white/20 bg-white/10 p-3">
+              <Smartphone size={20} className="mt-0.5 shrink-0 text-white" />
+              <div>
+                <p className="text-sm font-medium text-white">Installable Store</p>
+                <p className="text-xs text-white/80">Add to Home Screen</p>
+                <p className="mt-1 text-xs text-white/60">
+                  Let your customers add your store to their phone's home screen for quick, convenient access.
+                </p>
+              </div>
+            </div>
             <ul className="mt-5 space-y-2.5">
               {popularFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-white/80">
