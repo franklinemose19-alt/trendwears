@@ -3,15 +3,20 @@ import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { fetchProductsWithStats } from '@/services/products'
 import { createProduct, updateProduct, deleteProduct } from '@/services/admin'
 import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
+import { getSubscriptionState } from '@/utils/subscription'
 import ProductForm from '@/components/ProductForm'
 import type { Product, ProductWithStats } from '@/types'
+
+type Draft = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [businessId, setBusinessId] = useState<string | null>(null)
   const [allowFlashSale, setAllowFlashSale] = useState(false)
+  const [storeLive, setStoreLive] = useState(true)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
+  const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
 
   async function load() {
     setLoading(true)
@@ -24,47 +29,82 @@ export default function AdminProducts() {
       ])
       setProducts(data)
       setAllowFlashSale(features.flash_sales)
+      setStoreLive(business.status === 'active' && getSubscriptionState(business).state === 'active')
     }
     setLoading(false)
   }
 
   useEffect(() => { load() }, [])
 
-  async function handleCreate(data: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>) {
-    if (!businessId) {
-      alert('No business found for your account yet. Contact the MIRA admin to get set up.')
-      return
-    }
-    await createProduct({ ...data, business_id: businessId })
-    setEditing(null)
-    load()
+  function savedText(action: string) {
+    return storeLive
+      ? 'Product ' + action + '.'
+      : 'Product ' + action + '. Customers will see it once MIRA activates your store.'
   }
 
-  async function handleUpdate(id: string, data: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>) {
-    await updateProduct(id, data)
-    setEditing(null)
-    load()
+  async function handleCreate(data: Draft) {
+    if (!businessId) {
+      setMessage({ type: 'error', text: 'No store found for your account yet. Contact MIRA support.' })
+      return
+    }
+    try {
+      await createProduct({ ...data, business_id: businessId })
+      setEditing(null)
+      setMessage({ type: 'ok', text: savedText('published') })
+      load()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'Could not publish the product: ' + (err?.message ?? 'unknown error') })
+    }
+  }
+
+  async function handleUpdate(id: string, data: Draft) {
+    try {
+      await updateProduct(id, data)
+      setEditing(null)
+      setMessage({ type: 'ok', text: savedText('updated') })
+      load()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'Could not save changes: ' + (err?.message ?? 'unknown error') })
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this product? This cannot be undone.')) return
-    await deleteProduct(id)
-    load()
+    try {
+      await deleteProduct(id)
+      setMessage({ type: 'ok', text: 'Product deleted.' })
+      load()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'Could not delete the product: ' + (err?.message ?? 'unknown error') })
+    }
   }
 
   async function handleMarkSold(product: ProductWithStats) {
-    await updateProduct(product.id, { status: product.status === 'sold' ? 'available' : 'sold' })
-    load()
+    try {
+      await updateProduct(product.id, { status: product.status === 'sold' ? 'available' : 'sold' })
+      load()
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'Could not update the product: ' + (err?.message ?? 'unknown error') })
+    }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl">Products</h1>
-        <button onClick={() => setEditing('new')} className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black">
+        <button
+          onClick={() => { setMessage(null); setEditing('new') }}
+          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black"
+        >
           <Plus size={16} /> Add product
         </button>
       </div>
+
+      {message && (
+        <p className={'mt-4 rounded-lg px-4 py-3 text-sm ' + (message.type === 'ok' ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400')}>
+          {message.text}
+        </p>
+      )}
 
       {editing && (
         <div className="mt-6">
@@ -83,6 +123,9 @@ export default function AdminProducts() {
       )}
 
       <div className="mt-8 space-y-2">
+        {!loading && products.length === 0 && (
+          <p className="text-sm text-white/40">No products yet. Click Add product to publish your first one.</p>
+        )}
         {products.map((p) => (
           <div key={p.id} className="flex items-center gap-4 rounded-xl border border-white/10 p-3">
             <img src={p.images[0]} className="h-14 w-14 rounded-lg object-cover" />
