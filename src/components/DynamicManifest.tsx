@@ -1,19 +1,25 @@
 import { useEffect } from 'react'
 import { useBusiness } from '@/contexts/BusinessContext'
+import { activateManifest, storeManifestHref } from '@/utils/installPrompt'
 
-export default function DynamicManifest() {
+// Always sets the browser tab title to the store name.
+// Only stores whose plan includes "Installable Store" get a manifest (so only they can be added to a home screen).
+export default function DynamicManifest({ installable }: { installable: boolean }) {
   const { business, slug } = useBusiness()
+  const name = business?.name
 
   useEffect(() => {
-    if (!business) return
-
-    let manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null
-    if (!manifestLink) {
-      manifestLink = document.createElement('link')
-      manifestLink.rel = 'manifest'
-      document.head.appendChild(manifestLink)
+    if (!name) return
+    document.title = name
+    return () => {
+      document.title = 'MIRA'
     }
-    manifestLink.href = '/api/platform?action=manifest&slug=' + slug
+  }, [name])
+
+  useEffect(() => {
+    if (!installable) return
+
+    const removeManifest = activateManifest(storeManifestHref(slug))
 
     // Every store uses the same MIRA "M" app icon.
     let appleIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement | null
@@ -32,12 +38,8 @@ export default function DynamicManifest() {
     }
     themeColor.content = '#141414'
 
-    document.title = business.name
-
-    return () => {
-      document.title = 'MIRA'
-    }
-  }, [business, slug])
+    return removeManifest
+  }, [installable, slug])
 
   return null
 }
