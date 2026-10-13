@@ -4,10 +4,10 @@ import { fetchOverviewStats } from '@/services/admin'
 import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
 import { getSubscriptionState } from '@/utils/subscription'
 import { PLAN_PRICES, supportWhatsAppUrl } from '@/config'
-import PayInstructions from '@/components/PayInstructions'
 import StatsCard from '@/components/StatsCard'
 import ShareStoreCard from '@/components/ShareStoreCard'
 import SubscriptionCountdown from '@/components/SubscriptionCountdown'
+import PayInstructions from '@/components/PayInstructions'
 import type { Business, OverviewStats, PlanFeatures } from '@/types'
 
 const featureLabels: [keyof PlanFeatures, string][] = [
@@ -18,13 +18,14 @@ const featureLabels: [keyof PlanFeatures, string][] = [
   ['promotions', 'Promotions & discounts'],
   ['analytics', 'Analytics'],
   ['advanced_customization', 'Advanced customization'],
+  ['installable_store', 'Installable store (Add to Home Screen)'],
 ]
 
 function subscriptionMessage(business: Business): string | null {
   if (business.status === 'pending') return 'Your store is waiting for activation by MIRA.'
   if (business.status === 'suspended') return 'Your store has been suspended by MIRA. Contact MIRA to get it back online.'
   if (getSubscriptionState(business).state !== 'active') {
-    return 'Your subscription has expired, so your store is hidden from customers. Contact MIRA to renew and it will go back online.'
+    return 'Your subscription has expired, so your store is hidden from customers. Pay below and send the confirmation on WhatsApp, and it will go back online.'
   }
   return null
 }
