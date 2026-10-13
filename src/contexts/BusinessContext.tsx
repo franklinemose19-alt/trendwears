@@ -13,6 +13,7 @@ const DEFAULT_FEATURES: PlanFeatures = {
   advanced_customization: false,
   flash_sales: false,
   in_app_payment: false,
+  installable_store: false,
 }
 
 interface BusinessContextValue {
