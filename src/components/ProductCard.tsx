@@ -11,6 +11,8 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
   const sold = product.status === 'sold'
   const hasImage = product.images.length > 0
   const onSale = features.flash_sales && product.sale_price != null && product.sale_price < product.price
+  const featured = features.featured_products && product.featured
+  const categoryText = features.categories ? ' - ' + product.category : ''
 
   return (
     <div className="group">
@@ -36,6 +38,11 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
               Flash Sale
             </span>
           )}
+          {!sold && !onSale && featured && (
+            <span className="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 text-xs text-paper">
+              Featured
+            </span>
+          )}
         </div>
 
         <div className="mt-3 space-y-1">
@@ -43,12 +50,12 @@ export default function ProductCard({ product, whatsappNumber }: { product: Prod
           {onSale ? (
             <p className="text-sm text-stone">
               <span className="text-rust">KSh {product.sale_price!.toLocaleString()}</span>{' '}
-              <span className="line-through opacity-60">KSh {product.price.toLocaleString()}</span>{' '}
-              - {product.category}
+              <span className="line-through opacity-60">KSh {product.price.toLocaleString()}</span>
+              {categoryText}
             </p>
           ) : (
             <p className="text-sm text-stone">
-              KSh {product.price.toLocaleString()} - {product.category}
+              KSh {product.price.toLocaleString()}{categoryText}
             </p>
           )}
         </div>
