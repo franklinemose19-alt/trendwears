@@ -32,19 +32,31 @@ export default function BusinessList() {
   }, [businesses, search])
 
   async function handleStatusChange(business: Business, status: BusinessStatus) {
-    await updateBusinessStatus(business.id, status)
-    load()
+    try {
+      await updateBusinessStatus(business.id, status)
+      load()
+    } catch (err: any) {
+      alert('Could not change the status: ' + (err?.message ?? 'unknown error'))
+    }
   }
 
   async function handlePlanChange(business: Business, plan: Plan) {
-    await updateBusinessPlan(business.id, plan)
-    load()
+    try {
+      await updateBusinessPlan(business.id, plan)
+      load()
+    } catch (err: any) {
+      alert('Could not change the plan: ' + (err?.message ?? 'unknown error'))
+    }
   }
 
   async function handleMarkPaid(business: Business) {
     if (!confirm('Record a payment for ' + business.name + '? This activates the store and gives it one more month.')) return
-    await markBusinessPaid(business)
-    load()
+    try {
+      await markBusinessPaid(business)
+      load()
+    } catch (err: any) {
+      alert('Could not record the payment: ' + (err?.message ?? 'unknown error'))
+    }
   }
 
   return (
@@ -107,6 +119,12 @@ export default function BusinessList() {
                   <SubscriptionCountdown nextBillingDate={b.next_billing_date} />
                 </div>
 
+                {b.plan === 'pro' && (
+                  <p className="mt-3 text-xs text-yellow-400">
+                    This store is on Pro, which is not available yet and gives no extra features. Move it to Basic or Popular.
+                  </p>
+                )}
+
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/5 pt-4">
                   <select
                     value={b.plan}
@@ -115,7 +133,7 @@ export default function BusinessList() {
                   >
                     <option value="basic">Basic</option>
                     <option value="popular">Popular</option>
-                    <option value="pro">Pro</option>
+                    {b.plan === 'pro' && <option value="pro" disabled>Pro (not available)</option>}
                   </select>
 
                   <button
