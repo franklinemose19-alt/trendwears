@@ -65,7 +65,16 @@ export async function fetchPlanFeatures(plan: Plan): Promise<PlanFeatures> {
     flash_sales: false,
     in_app_payment: false,
     installable_store: false,
+    categories: false,
+    search_filter: false,
+    featured_products: false,
+    inquiries: false,
+    custom_branding: false,
   }
+
+  // Pro is not available yet: it never grants entitlements, whatever the table says.
+  if (plan === 'pro') return features
+
   ;(data ?? []).forEach((row) => {
     if (row.feature in features) {
       ;(features as any)[row.feature] = row.enabled
