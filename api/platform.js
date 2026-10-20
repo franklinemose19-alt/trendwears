@@ -15,6 +15,25 @@ export default async function handler(req, res) {
   res.status(400).json({ error: 'Unknown action' })
 }
 
+// A store's app manifest is only issued while the store is active, paid up AND on a plan that
+// includes the installable store. Anything else gets no manifest, so the browser cannot offer
+// (or refresh) the install. The check runs on every request and is never cached for denials.
+async function isEntitledToInstall(business) {
+  if (!business) return false
+  if (business.status !== 'active') return false
+  if (!business.next_billing_date || new Date(business.next_billing_date) <= new Date()) return false
+  if (business.plan === 'pro') return false // Pro is not available yet
+
+  const { data: feature } = await supabase
+    .from('plan_features')
+    .select('enabled')
+    .eq('plan', business.plan)
+    .eq('feature', 'installable_store')
+    .maybeSingle()
+
+  return !!feature?.enabled
+}
+
 async function handleManifest(req, res) {
   const { slug } = req.query
   if (!slug) {
@@ -24,17 +43,22 @@ async function handleManifest(req, res) {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name, slug')
+    .select('name, slug, plan, status, next_billing_date')
     .eq('slug', slug)
     .maybeSingle()
 
-  const name = business?.name || 'MIRA Store'
-  const storeSlug = business?.slug || slug
+  if (!(await isEntitledToInstall(business))) {
+    res.setHeader('Cache-Control', 'no-store')
+    res.status(403).json({ error: 'The installable store is not available for this store.' })
+    return
+  }
+
+  const name = business.name
   const host = req.headers['x-forwarded-host'] || req.headers.host
   const origin = 'https://' + host
 
   // The trailing slash keeps this app limited to this one store (/store/abc must not cover /store/abcd).
-  const storePath = '/store/' + storeSlug + '/'
+  const storePath = '/store/' + business.slug + '/'
 
   // Every store gets the same MIRA "M" icon; the store name is the only thing that differs.
   const icons = [
@@ -56,6 +80,6 @@ async function handleManifest(req, res) {
   }
 
   res.setHeader('Content-Type', 'application/manifest+json')
-  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate')
+  res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60')
   res.status(200).json(manifest)
 }
