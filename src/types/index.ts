@@ -1,7 +1,7 @@
 export type ProductStatus = 'available' | 'sold' | 'draft'
 export type BusinessStatus = 'active' | 'suspended' | 'pending'
 export type Plan = 'basic' | 'popular' | 'pro'
-export type FeatureName = 'cart' | 'favorites' | 'customer_accounts' | 'notifications' | 'promotions' | 'analytics' | 'advanced_customization' | 'flash_sales' | 'in_app_payment' | 'installable_store'
+export type FeatureName = 'cart' | 'favorites' | 'customer_accounts' | 'notifications' | 'promotions' | 'analytics' | 'advanced_customization' | 'flash_sales' | 'in_app_payment' | 'installable_store' | 'categories' | 'search_filter' | 'featured_products' | 'inquiries' | 'custom_branding'
 
 export interface Business {
   id: string
@@ -21,6 +21,7 @@ export interface Business {
   instagram_url: string | null
   tiktok_url: string | null
   facebook_url: string | null
+  brand_color: string | null
   created_at: string
   updated_at: string
 }
@@ -31,6 +32,7 @@ export interface Product {
   name: string
   price: number
   sale_price: number | null
+  featured: boolean
   category: string
   size: string
   condition: string
@@ -71,4 +73,17 @@ export interface PlanFeatures {
   flash_sales: boolean
   in_app_payment: boolean
   installable_store: boolean
+  categories: boolean
+  search_filter: boolean
+  featured_products: boolean
+  inquiries: boolean
+  custom_branding: boolean
+}
+
+export interface PlanInfo {
+  id: Plan
+  name: string
+  monthly_price: number
+  max_images: number
+  purchasable: boolean
 }
