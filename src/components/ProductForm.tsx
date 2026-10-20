@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Upload, X } from 'lucide-react'
 import { uploadProductImage } from '@/services/admin'
+import { validateImageFile, compressImage } from '@/utils/images'
 import type { Product, ProductStatus } from '@/types'
 
 type ProductDraft = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>
@@ -10,37 +11,77 @@ interface Props {
   onSubmit: (data: ProductDraft) => Promise<void>
   submitLabel: string
   allowFlashSale: boolean
+  allowCategories: boolean
+  allowFeatured: boolean
   businessId: string | null
+  planName: string
+  imageLimit: number
+  imagesUsedElsewhere: number
 }
 
 const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes', 'Other']
 const conditions = ['Excellent', 'Good', 'Fair']
 
-export default function ProductForm({ initial, onSubmit, submitLabel, allowFlashSale, businessId }: Props) {
+export default function ProductForm({
+  initial,
+  onSubmit,
+  submitLabel,
+  allowFlashSale,
+  allowCategories,
+  allowFeatured,
+  businessId,
+  planName,
+  imageLimit,
+  imagesUsedElsewhere,
+}: Props) {
   const [name, setName] = useState(initial?.name ?? '')
   const [price, setPrice] = useState(initial?.price?.toString() ?? '')
   const [salePrice, setSalePrice] = useState(initial?.sale_price?.toString() ?? '')
-  const [category, setCategory] = useState(initial?.category ?? categories[0])
+  const [category, setCategory] = useState(initial?.category ?? (allowCategories ? categories[0] : 'Other'))
   const [size, setSize] = useState(initial?.size ?? '')
   const [condition, setCondition] = useState(initial?.condition ?? conditions[0])
   const [description, setDescription] = useState(initial?.description ?? '')
   const [status, setStatus] = useState<ProductStatus>(initial?.status ?? 'available')
+  const [featured, setFeatured] = useState(initial?.featured ?? false)
   const [images, setImages] = useState<string[]>(initial?.images ?? [])
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  async function handleFiles(fileList: FileList | null) {
-    if (!fileList) return
+  const usedNow = imagesUsedElsewhere + images.length
+  const remaining = Math.max(0, imageLimit - usedNow)
+
+  async function handleFiles(files: File[]) {
+    if (files.length === 0) return
+    setUploadError('')
+
     if (!businessId) {
-      alert('Your store is still loading. Please try again in a moment.')
+      setUploadError('Your store is still loading. Please try again in a moment.')
       return
     }
+    if (remaining <= 0) {
+      setUploadError('You have reached your ' + planName + ' allowance of ' + imageLimit + ' active images. Remove an image or upgrade to add more.')
+      return
+    }
+    if (files.length > remaining) {
+      setUploadError('You can add ' + remaining + ' more image' + (remaining === 1 ? '' : 's') + ', but you selected ' + files.length + '.')
+      return
+    }
+    for (const f of files) {
+      const problem = validateImageFile(f)
+      if (problem) {
+        setUploadError(problem)
+        return
+      }
+    }
+
     setUploading(true)
     try {
-      const urls = await Promise.all(Array.from(fileList).map((f) => uploadProductImage(f, businessId)))
+      const prepared = await Promise.all(files.map(compressImage))
+      const urls = await Promise.all(prepared.map((f) => uploadProductImage(f, businessId)))
       setImages((prev) => [...prev, ...urls])
     } catch (err: any) {
-      alert('Image upload failed: ' + (err?.message ?? 'unknown error') + '. Check that the "product-images" Storage bucket exists and is Public.')
+      setUploadError('Image upload failed: ' + (err?.message ?? 'unknown error'))
     } finally {
       setUploading(false)
     }
@@ -54,6 +95,7 @@ export default function ProductForm({ initial, onSubmit, submitLabel, allowFlash
         name,
         price: Number(price),
         sale_price: allowFlashSale && salePrice ? Number(salePrice) : null,
+        featured: allowFeatured ? featured : (initial?.featured ?? false),
         category,
         size,
         condition,
@@ -90,16 +132,17 @@ export default function ProductForm({ initial, onSubmit, submitLabel, allowFlash
               placeholder="Leave blank for no active sale"
               className={inputCls}
             />
-            <p className="mt-1 text-xs text-white/40">When set below the regular price, this product shows a Flash Sale badge storewide.</p>
           </div>
         )}
 
-        <div>
-          <label className="mb-1 block text-sm text-white/60">Category</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
-            {categories.map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </div>
+        {allowCategories && (
+          <div>
+            <label className="mb-1 block text-sm text-white/60">Category</label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
+              {categories.map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+        )}
         <div>
           <label className="mb-1 block text-sm text-white/60">Size</label>
           <input value={size} onChange={(e) => setSize(e.target.value)} required className={inputCls} />
@@ -120,13 +163,25 @@ export default function ProductForm({ initial, onSubmit, submitLabel, allowFlash
         </div>
       </div>
 
+      {allowFeatured && (
+        <label className="flex items-center gap-2 text-sm text-white/70">
+          <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+          Feature this product on the store home page
+        </label>
+      )}
+
       <div>
         <label className="mb-1 block text-sm text-white/60">Description</label>
         <textarea value={description ?? ''} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm text-white/60">Images</label>
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <label className="text-sm text-white/60">Images</label>
+          <span className="text-xs text-white/40">
+            {usedNow} / {imageLimit} images used - {remaining} remaining
+          </span>
+        </div>
         <div className="flex flex-wrap gap-3">
           {images.map((url, i) => (
             <div key={url} className="relative h-20 w-20">
@@ -140,11 +195,29 @@ export default function ProductForm({ initial, onSubmit, submitLabel, allowFlash
               </button>
             </div>
           ))}
-          <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/25 text-white/50 hover:border-white/50">
+          <label
+            className={
+              'flex h-20 w-20 items-center justify-center rounded-lg border border-dashed border-white/25 text-white/50 ' +
+              (remaining > 0 ? 'cursor-pointer hover:border-white/50' : 'cursor-not-allowed opacity-40')
+            }
+          >
             {uploading ? '...' : <Upload size={18} />}
-            <input type="file" multiple accept="image/*" className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              disabled={uploading || remaining <= 0}
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? [])
+                e.target.value = ''
+                handleFiles(files)
+              }}
+            />
           </label>
         </div>
+        <p className="mt-2 text-xs text-white/40">JPG, PNG or WebP. Large photos are resized and compressed automatically.</p>
+        {uploadError && <p className="mt-2 text-sm text-red-400">{uploadError}</p>}
       </div>
 
       <button
