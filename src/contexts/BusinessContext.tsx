@@ -14,6 +14,11 @@ const DEFAULT_FEATURES: PlanFeatures = {
   flash_sales: false,
   in_app_payment: false,
   installable_store: false,
+  categories: false,
+  search_filter: false,
+  featured_products: false,
+  inquiries: false,
+  custom_branding: false,
 }
 
 interface BusinessContextValue {
@@ -21,6 +26,7 @@ interface BusinessContextValue {
   loading: boolean
   slug: string
   features: PlanFeatures
+  featuresLoading: boolean
 }
 
 const BusinessContext = createContext<BusinessContextValue>({
@@ -28,6 +34,7 @@ const BusinessContext = createContext<BusinessContextValue>({
   loading: true,
   slug: '',
   features: DEFAULT_FEATURES,
+  featuresLoading: true,
 })
 
 export function BusinessProvider({ children }: { children: ReactNode }) {
@@ -35,6 +42,7 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
   const [business, setBusiness] = useState<Business | null>(null)
   const [features, setFeatures] = useState<PlanFeatures>(DEFAULT_FEATURES)
   const [loading, setLoading] = useState(true)
+  const [featuresLoading, setFeaturesLoading] = useState(true)
 
   useEffect(() => {
     if (!slug) {
@@ -42,17 +50,23 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
       return
     }
     setLoading(true)
+    setFeaturesLoading(true)
     fetchBusinessBySlug(slug).then((b) => {
       setBusiness(b)
       setLoading(false)
       if (b) {
-        fetchPlanFeatures(b.plan).then(setFeatures)
+        fetchPlanFeatures(b.plan)
+          .then(setFeatures)
+          .catch(() => setFeatures(DEFAULT_FEATURES))
+          .finally(() => setFeaturesLoading(false))
+      } else {
+        setFeaturesLoading(false)
       }
     })
   }, [slug])
 
   return (
-    <BusinessContext.Provider value={{ business, loading, slug: slug ?? '', features }}>
+    <BusinessContext.Provider value={{ business, loading, slug: slug ?? '', features, featuresLoading }}>
       {children}
     </BusinessContext.Provider>
   )
