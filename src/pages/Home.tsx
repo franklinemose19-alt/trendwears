@@ -9,12 +9,16 @@ import { sortProducts } from '@/services/products'
 const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes']
 
 export default function Home() {
-  const { business, slug } = useBusiness()
+  const { business, slug, features } = useBusiness()
   const { products, loading } = useProducts(business?.id)
 
   const available = useMemo(() => products.filter((p) => p.status === 'available'), [products])
   const latest = available.slice(0, 4)
   const popular = useMemo(() => sortProducts(available, 'most_liked').slice(0, 4), [available])
+  const featured = useMemo(
+    () => (features.featured_products ? available.filter((p) => p.featured).slice(0, 4) : []),
+    [available, features.featured_products]
+  )
 
   const whatsappNumber = business?.whatsapp_number ?? ''
   const waLink = whatsappNumber ? 'https://wa.me/' + whatsappNumber.replace(/[^\d]/g, '') : ''
@@ -58,15 +62,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-ink/10 py-4 md:py-6">
-        <div className="mx-auto flex max-w-6xl gap-5 overflow-x-auto px-4 text-sm md:gap-6 md:px-5">
-          {categories.map((c) => (
-            <Link key={c} to={'/store/' + slug + '/shop?category=' + encodeURIComponent(c)} className="whitespace-nowrap text-stone hover:text-ink">
-              {c}
-            </Link>
-          ))}
-        </div>
-      </section>
+      {features.categories && (
+        <section className="border-y border-ink/10 py-4 md:py-6">
+          <div className="mx-auto flex max-w-6xl gap-5 overflow-x-auto px-4 text-sm md:gap-6 md:px-5">
+            {categories.map((c) => (
+              <Link key={c} to={'/store/' + slug + '/shop?category=' + encodeURIComponent(c)} className="whitespace-nowrap text-stone hover:text-ink">
+                {c}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pt-8 md:px-5 md:pt-14">
+          <h2 className="mb-4 font-display text-xl text-ink md:mb-6 md:text-2xl">Featured</h2>
+          <ProductGrid products={featured} whatsappNumber={whatsappNumber} />
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-4 py-8 md:px-5 md:py-14">
         <div className="mb-4 flex items-end justify-between md:mb-6">
