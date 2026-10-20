@@ -19,6 +19,12 @@ export default function ProductDetails() {
   const sold = product.status === 'sold'
   const onSale = features.flash_sales && product.sale_price != null && product.sale_price < product.price
 
+  const inquiryUrl =
+    features.inquiries && business?.whatsapp_number
+      ? 'https://wa.me/' + business.whatsapp_number.replace(/[^\d]/g, '') +
+        '?text=' + encodeURIComponent('Hi ' + business.name + ', I have a question about ' + product.name + '.')
+      : ''
+
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
       <Link to={'/store/' + slug + '/shop'} className="mb-6 inline-flex items-center gap-1 text-sm text-stone hover:text-ink">
@@ -49,10 +55,12 @@ export default function ProductDetails() {
               <dt className="text-stone">Size</dt>
               <dd className="text-ink">{product.size}</dd>
             </div>
-            <div>
-              <dt className="text-stone">Category</dt>
-              <dd className="text-ink">{product.category}</dd>
-            </div>
+            {features.categories && (
+              <div>
+                <dt className="text-stone">Category</dt>
+                <dd className="text-ink">{product.category}</dd>
+              </div>
+            )}
             <div>
               <dt className="text-stone">Condition</dt>
               <dd className="text-ink">{product.condition}</dd>
@@ -85,6 +93,16 @@ export default function ProductDetails() {
             )}
             {features.cart && !sold && (
               <CartButton businessId={product.business_id} product={product} />
+            )}
+            {inquiryUrl && (
+              <a
+                href={inquiryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-ink/15 px-4 py-2 text-xs text-ink hover:border-ink/30"
+              >
+                Ask a question
+              </a>
             )}
             {business?.whatsapp_number && (
               <WhatsAppButton
