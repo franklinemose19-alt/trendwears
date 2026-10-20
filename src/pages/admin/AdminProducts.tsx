@@ -3,16 +3,22 @@ import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import { fetchProductsWithStats } from '@/services/products'
 import { createProduct, updateProduct, deleteProduct } from '@/services/admin'
 import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
+import { fetchImageUsage } from '@/services/plans'
 import { getSubscriptionState } from '@/utils/subscription'
+import { usePlans } from '@/hooks/usePlans'
 import ProductForm from '@/components/ProductForm'
-import type { Product, ProductWithStats } from '@/types'
+import ImageUsageBar from '@/components/ImageUsageBar'
+import type { Plan, PlanFeatures, Product, ProductWithStats } from '@/types'
 
 type Draft = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>
 
 export default function AdminProducts() {
+  const { byId } = usePlans()
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [businessId, setBusinessId] = useState<string | null>(null)
-  const [allowFlashSale, setAllowFlashSale] = useState(false)
+  const [plan, setPlan] = useState<Plan>('basic')
+  const [features, setFeatures] = useState<PlanFeatures | null>(null)
+  const [usedImages, setUsedImages] = useState(0)
   const [storeLive, setStoreLive] = useState(true)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Product | 'new' | null>(null)
@@ -23,18 +29,27 @@ export default function AdminProducts() {
     const business = await fetchMyBusiness()
     setBusinessId(business?.id ?? null)
     if (business) {
-      const [data, features] = await Promise.all([
+      const [data, planFeatures, used] = await Promise.all([
         fetchProductsWithStats(business.id),
         fetchPlanFeatures(business.plan),
+        fetchImageUsage(business.id),
       ])
       setProducts(data)
-      setAllowFlashSale(features.flash_sales)
+      setPlan(business.plan)
+      setFeatures(planFeatures)
+      setUsedImages(used)
       setStoreLive(business.status === 'active' && getSubscriptionState(business).state === 'active')
     }
     setLoading(false)
   }
 
   useEffect(() => { load() }, [])
+
+  const planInfo = byId(plan)
+  const usedElsewhere = editing && editing !== 'new' ? Math.max(0, usedImages - editing.images.length) : usedImages
+  const upgrade = plan === 'basic'
+    ? { name: byId('popular').name, limit: byId('popular').max_images, href: '/admin' }
+    : null
 
   function savedText(action: string) {
     return storeLive
@@ -100,13 +115,19 @@ export default function AdminProducts() {
         </button>
       </div>
 
+      {!loading && (
+        <div className="mt-4">
+          <ImageUsageBar used={usedImages} limit={planInfo.max_images} planName={planInfo.name} upgrade={upgrade} />
+        </div>
+      )}
+
       {message && (
         <p className={'mt-4 rounded-lg px-4 py-3 text-sm ' + (message.type === 'ok' ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400')}>
           {message.text}
         </p>
       )}
 
-      {editing && (
+      {editing && features && (
         <div className="mt-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm text-white/60">{editing === 'new' ? 'New product' : 'Edit product'}</h2>
@@ -115,8 +136,13 @@ export default function AdminProducts() {
           <ProductForm
             initial={editing === 'new' ? undefined : editing}
             submitLabel={editing === 'new' ? 'Publish' : 'Save changes'}
-            allowFlashSale={allowFlashSale}
+            allowFlashSale={features.flash_sales}
+            allowCategories={features.categories}
+            allowFeatured={features.featured_products}
             businessId={businessId}
+            planName={planInfo.name}
+            imageLimit={planInfo.max_images}
+            imagesUsedElsewhere={usedElsewhere}
             onSubmit={(data) => (editing === 'new' ? handleCreate(data) : handleUpdate((editing as Product).id, data))}
           />
         </div>
@@ -132,7 +158,10 @@ export default function AdminProducts() {
             <div className="flex-1">
               <p className="text-sm font-medium">
                 {p.name}
-                {p.sale_price != null && p.sale_price < p.price && (
+                {p.featured && features?.featured_products && (
+                  <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/70">Featured</span>
+                )}
+                {p.sale_price != null && p.sale_price < p.price && features?.flash_sales && (
                   <span className="ml-2 rounded-full bg-rust/20 px-2 py-0.5 text-xs text-rust">Flash Sale</span>
                 )}
               </p>
