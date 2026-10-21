@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, Lock, Smartphone } from 'lucide-react'
 import { usePlans } from '@/hooks/usePlans'
-import HelplineButton from '@/components/HelplineButton'
+import ReferEarnBanner from '@/components/ReferEarnBanner'
 import PayInstructions from '@/components/PayInstructions'
 import InstallButton from '@/components/InstallButton'
 import { activateManifest, MIRA_MANIFEST_HREF } from '@/utils/installPrompt'
@@ -97,6 +97,10 @@ export default function MiraLanding() {
             Create your store
           </Link>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 pb-16">
+        <ReferEarnBanner variant="landing" />
       </section>
 
       <section className="mx-auto max-w-5xl px-5 pb-20">
@@ -221,8 +225,6 @@ export default function MiraLanding() {
       <footer className="border-t border-white/10 py-8 text-center text-xs text-white/40">
         MIRA · Built by FRANK DAVINCI TECHNOLOGIES
       </footer>
-
-      <HelplineButton />
     </div>
   )
 }
