@@ -12,6 +12,7 @@ import SubscriptionCountdown from '@/components/SubscriptionCountdown'
 import PayInstructions from '@/components/PayInstructions'
 import ImageUsageBar from '@/components/ImageUsageBar'
 import ReferEarnBanner from '@/components/ReferEarnBanner'
+import InstallableStoreCard from '@/components/InstallableStoreCard'
 import type { Business, OverviewStats, PlanFeatures } from '@/types'
 
 const featureLabels: [keyof PlanFeatures, string][] = [
@@ -146,6 +147,12 @@ export default function AdminDashboard() {
       </p>
 
       {business && <ShareStoreCard business={business} />}
+
+      {business && features && (
+        <div className="mt-6">
+          <InstallableStoreCard business={business} enabled={features.installable_store} popularName={popular.name} />
+        </div>
+      )}
 
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3">
         <StatsCard label="Total products" value={stats?.totalProducts ?? '-'} />
