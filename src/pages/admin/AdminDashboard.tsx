@@ -11,6 +11,7 @@ import ShareStoreCard from '@/components/ShareStoreCard'
 import SubscriptionCountdown from '@/components/SubscriptionCountdown'
 import PayInstructions from '@/components/PayInstructions'
 import ImageUsageBar from '@/components/ImageUsageBar'
+import ReferEarnBanner from '@/components/ReferEarnBanner'
 import type { Business, OverviewStats, PlanFeatures } from '@/types'
 
 const featureLabels: [keyof PlanFeatures, string][] = [
@@ -77,6 +78,10 @@ export default function AdminDashboard() {
             {plan.name} plan
           </span>
         )}
+      </div>
+
+      <div className="mt-6">
+        <ReferEarnBanner variant="dashboard" />
       </div>
 
       {business && plan && (
