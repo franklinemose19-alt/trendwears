@@ -3,6 +3,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+export type InstallOutcome = 'accepted' | 'dismissed' | 'unavailable'
+
 export const MIRA_MANIFEST_HREF = '/mira.webmanifest'
 
 export function storeManifestHref(slug: string): string {
@@ -64,18 +66,24 @@ export function canPromptInstall(href: string): boolean {
   return !installed && !!deferred && deferred.forHref === href
 }
 
-export async function promptInstall(href: string): Promise<void> {
-  if (!deferred || deferred.forHref !== href) return
+export function isInstalled(): boolean {
+  return installed
+}
+
+export async function promptInstall(href: string): Promise<InstallOutcome> {
+  if (!deferred || deferred.forHref !== href) return 'unavailable'
   const ev = deferred.event
   deferred = null // the browser allows prompt() only once per event
   notify()
   await ev.prompt()
-  await ev.userChoice
+  const choice = await ev.userChoice
+  return choice.outcome
 }
 
 export function isStandalone(): boolean {
   if (typeof window === 'undefined') return false
-  return window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true
+  const byMedia = typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches
+  return byMedia || (navigator as any).standalone === true
 }
 
 export function isIos(): boolean {
