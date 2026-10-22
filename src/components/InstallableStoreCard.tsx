@@ -1,5 +1,8 @@
-import { Smartphone, Lock, ExternalLink, MessageCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Smartphone, Lock, ExternalLink, MessageCircle, Download, Check } from 'lucide-react'
 import { getSubscriptionState } from '@/utils/subscription'
+import { activateManifest, storeManifestHref } from '@/utils/installPrompt'
+import { useInstallPrompt } from '@/hooks/useInstallPrompt'
 import { supportWhatsAppUrl } from '@/config'
 import type { Business } from '@/types'
 
@@ -11,7 +14,23 @@ interface Props {
 
 export default function InstallableStoreCard({ business, enabled, popularName }: Props) {
   const live = business.status === 'active' && getSubscriptionState(business).state === 'active'
+  const canUse = enabled && live
   const storePath = '/store/' + business.slug
+  const href = storeManifestHref(business.slug)
+  const [result, setResult] = useState<'accepted' | 'dismissed' | null>(null)
+
+  // While this card is on screen, point the page at THIS store's app so the browser can offer to install it.
+  useEffect(() => {
+    if (!canUse) return
+    return activateManifest(href)
+  }, [canUse, href])
+
+  const { canInstall, installed, promptInstall, standalone, ios } = useInstallPrompt(href)
+
+  async function handleInstall() {
+    const outcome = await promptInstall()
+    if (outcome !== 'unavailable') setResult(outcome)
+  }
 
   // Not part of this plan
   if (!enabled && business.plan === 'basic') {
@@ -53,6 +72,12 @@ export default function InstallableStoreCard({ business, enabled, popularName }:
     )
   }
 
+  const helper = canInstall
+    ? 'Your browser will ask you to confirm. The store is added to your home screen with the MIRA icon.'
+    : ios
+      ? 'On iPhone, open your store in Safari, tap Share, then choose Add to Home Screen.'
+      : "This browser has not offered to install from here. Open your store and use its Install App button, or your browser menu (Install app or Add to Home screen)."
+
   // Included in the plan
   return (
     <div className="rounded-2xl border border-white/20 bg-white/5 p-5">
@@ -65,32 +90,59 @@ export default function InstallableStoreCard({ business, enabled, popularName }:
       </div>
 
       <p className="mt-2 text-xs text-white/60">
-        Customers can add your store to their phone's home screen. On Chrome and Edge they will see an Install App
-        button on your store pages. On iPhone they use Share, then Add to Home Screen.
+        Add your store to your phone's home screen like an app. Your customers can do the same: on Chrome and Edge they
+        see an Install App button on your store pages, and on iPhone they use Share, then Add to Home Screen.
       </p>
 
       {!live && (
         <p className="mt-2 text-xs text-yellow-400">
-          The install button only appears while your store is active and paid up. It is switched on for your plan, so
-          it will show as soon as MIRA confirms your payment.
+          The install button only works while your store is active and paid up. It is switched on for your plan, so it
+          will be available as soon as MIRA confirms your payment.
         </p>
       )}
 
-      {live && (
-        <a
-          href={storePath}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-xs text-white/85 hover:border-white/50 hover:text-white"
-        >
-          <ExternalLink size={13} />
-          Open my store to see it
-        </a>
+      {live && standalone && (
+        <p className="mt-3 text-xs text-green-400">You are using the installed app.</p>
+      )}
+
+      {live && !standalone && (installed || result === 'accepted') && (
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-green-400">
+          <Check size={13} />
+          Installed. Look for your store on your home screen.
+        </p>
+      )}
+
+      {live && !standalone && !installed && result !== 'accepted' && (
+        <div className="mt-3">
+          {result === 'dismissed' && (
+            <p className="mb-2 text-xs text-white/50">Installation was cancelled. You can try again from your store.</p>
+          )}
+          {canInstall ? (
+            <button
+              type="button"
+              onClick={handleInstall}
+              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform hover:scale-[1.02]"
+            >
+              <Download size={15} />
+              Install my store
+            </button>
+          ) : (
+            <a
+              href={storePath + '?install=1'}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform hover:scale-[1.02]"
+            >
+              <ExternalLink size={15} />
+              Open my store to install
+            </a>
+          )}
+          <p className="mt-2 text-xs text-white/50">{helper}</p>
+        </div>
       )}
 
       <p className="mt-3 text-[11px] text-white/40">
-        The install button appears on supported browsers only, and not inside the WhatsApp or Instagram in-app browser.
-        Customers can open your link in Chrome or Safari first.
+        Installing works on supported browsers only, and not inside the WhatsApp or Instagram in-app browser.
       </p>
     </div>
   )
