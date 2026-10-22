@@ -2,11 +2,12 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { Outlet } from 'react-router-dom'
 import { BusinessProvider, useBusiness } from '@/contexts/BusinessContext'
 import { getSubscriptionState } from '@/utils/subscription'
-import { isStandalone } from '@/utils/installPrompt'
+import { isStandalone, storeManifestHref } from '@/utils/installPrompt'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import DynamicManifest from '@/components/DynamicManifest'
 import InstalledAppNotice from '@/components/InstalledAppNotice'
+import InstallNudge from '@/components/InstallNudge'
 
 function hexToChannels(hex: string): string {
   const n = parseInt(hex.slice(1), 16)
@@ -93,6 +94,11 @@ function StoreGate() {
     <div style={style} className="flex min-h-screen w-full flex-col overflow-x-hidden">
       <DynamicManifest installable={features.installable_store} />
       <Navbar />
+      <InstallNudge
+        businessName={business.name}
+        manifestHref={storeManifestHref(slug)}
+        enabled={features.installable_store}
+      />
       <main className="flex-1 overflow-x-hidden">
         <Outlet />
       </main>
