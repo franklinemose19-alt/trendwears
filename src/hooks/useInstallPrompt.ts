@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { subscribeInstall, canPromptInstall, promptInstall, isStandalone, isIos } from '@/utils/installPrompt'
+import { subscribeInstall, canPromptInstall, isInstalled, promptInstall, isStandalone, isIos } from '@/utils/installPrompt'
 
 export function useInstallPrompt(manifestHref: string) {
   const canInstall = useSyncExternalStore(
@@ -7,9 +7,11 @@ export function useInstallPrompt(manifestHref: string) {
     () => canPromptInstall(manifestHref),
     () => false
   )
+  const installed = useSyncExternalStore(subscribeInstall, isInstalled, () => false)
 
   return {
     canInstall,
+    installed,
     promptInstall: () => promptInstall(manifestHref),
     standalone: isStandalone(),
     ios: isIos(),
