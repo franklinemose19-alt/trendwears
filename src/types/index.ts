@@ -18,6 +18,8 @@ export interface Business {
   owner_user_id: string | null
   subscription_status: 'unpaid' | 'paid'
   next_billing_date: string | null
+  trial_started_at: string | null
+  trial_ends_at: string | null
   instagram_url: string | null
   tiktok_url: string | null
   facebook_url: string | null
@@ -83,7 +85,7 @@ export interface PlanFeatures {
 export interface PlanInfo {
   id: Plan
   name: string
-  monthly_price: number
+  monthly_price: number | null
   max_images: number
   purchasable: boolean
 }
