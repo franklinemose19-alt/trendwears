@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Search, ExternalLink, CheckCircle2 } from 'lucide-react'
 import { fetchAllBusinesses, updateBusinessStatus, updateBusinessPlan, markBusinessPaid } from '@/services/businesses'
 import { getSubscriptionState } from '@/utils/subscription'
+import { getTrialState } from '@/utils/trial'
+import { usePlans } from '@/hooks/usePlans'
 import SubscriptionCountdown from '@/components/SubscriptionCountdown'
 import type { Business, BusinessStatus, Plan } from '@/types'
 
@@ -12,6 +14,7 @@ const statusStyles: Record<BusinessStatus, string> = {
 }
 
 export default function BusinessList() {
+  const { byId } = usePlans()
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -80,9 +83,10 @@ export default function BusinessList() {
         <div className="mt-6 space-y-3">
           {filtered.map((b) => {
             const sub = getSubscriptionState(b)
+            const trial = getTrialState(b).state
             const locked = b.status === 'active' && sub.state !== 'active'
-            const statusLabel = locked ? 'locked - unpaid' : b.status
-            const statusClass = locked ? statusStyles.suspended : statusStyles[b.status]
+            const statusLabel = trial === 'active' ? 'free trial' : locked ? (trial === 'expired' ? 'trial ended' : 'locked - unpaid') : b.status
+            const statusClass = trial === 'active' ? statusStyles.active : locked ? statusStyles.suspended : statusStyles[b.status]
 
             return (
               <div key={b.id} className="rounded-xl border border-white/10 p-4">
@@ -101,8 +105,8 @@ export default function BusinessList() {
                     <span className={'rounded-full px-3 py-1 text-xs capitalize ' + statusClass}>
                       {statusLabel}
                     </span>
-                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs capitalize text-white/70">
-                      {b.plan}
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
+                      {trial === 'active' || trial === 'expired' ? 'MIRA Preview' : byId(b.plan).name}
                     </span>
                     <a
                       href={'/store/' + b.slug}
@@ -121,7 +125,7 @@ export default function BusinessList() {
 
                 {b.plan === 'pro' && (
                   <p className="mt-3 text-xs text-yellow-400">
-                    This store is on Pro, which is not available yet and gives no extra features. Move it to Basic or Popular.
+                    This store is on {byId('pro').name}, which is not available yet and gives no extra features. Move it to {byId('basic').name} or {byId('popular').name}.
                   </p>
                 )}
 
@@ -131,9 +135,9 @@ export default function BusinessList() {
                     onChange={(e) => handlePlanChange(b, e.target.value as Plan)}
                     className="rounded-lg border border-white/15 bg-transparent px-3 py-1.5 text-xs"
                   >
-                    <option value="basic">Basic</option>
-                    <option value="popular">Popular</option>
-                    {b.plan === 'pro' && <option value="pro" disabled>Pro (not available)</option>}
+                    <option value="basic">{byId('basic').name}</option>
+                    <option value="popular">{byId('popular').name}</option>
+                    {b.plan === 'pro' && <option value="pro" disabled>{byId('pro').name} (not available)</option>}
                   </select>
 
                   <button
