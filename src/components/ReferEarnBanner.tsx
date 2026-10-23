@@ -9,15 +9,15 @@ const COPY: Record<Variant, { headline: string; description: string; button: str
   landing: {
     headline: 'Your Boutique Deserves the Spotlight.',
     description:
-      'Know another boutique owner who wants to grow online? Refer them to MIRA and get a chance to earn a top spot on our upcoming marketplace. Grow with MIRA and put your boutique in the spotlight.',
+      'Know another boutique owner who deserves more visibility? Refer them to MIRA and get a chance to earn a top spot on our upcoming marketplace.',
     button: 'Refer & Earn',
     note: 'Marketplace launch and placement criteria will be announced soon.',
   },
   dashboard: {
     headline: 'Refer & Earn a Top Spot!',
     description:
-      'Refer other boutique owners to MIRA for a chance to qualify for a top spot on our upcoming marketplace.',
-    button: 'Refer a Boutique',
+      'Invite other boutique owners to join MIRA for a chance to qualify for a top spot on our upcoming marketplace.',
+    button: 'Refer & Earn',
   },
 }
 
