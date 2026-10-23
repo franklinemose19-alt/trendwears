@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchMyBusiness, fetchPlanFeatures, updateBusiness } from '@/services/businesses'
+import { usePlans } from '@/hooks/usePlans'
 import type { Business, PlanFeatures } from '@/types'
 
 const fields: [keyof Business, string][] = [
@@ -14,6 +15,7 @@ const fields: [keyof Business, string][] = [
 const DEFAULT_BRAND = '#4a5240'
 
 export default function AdminSettingsPage() {
+  const { byId } = usePlans()
   const [settings, setSettings] = useState<Business | null>(null)
   const [features, setFeatures] = useState<PlanFeatures | null>(null)
   const [saved, setSaved] = useState(false)
@@ -81,13 +83,13 @@ export default function AdminSettingsPage() {
               <span className="text-xs text-white/40">Choose a darker colour so button text stays readable.</span>
             </div>
           ) : (
-            <p className="text-xs text-white/40">Custom branding is included in the Popular plan.</p>
+            <p className="text-xs text-white/40">Custom branding is included in {byId('popular').name}.</p>
           )}
         </div>
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
-        <button type="submit" className="rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black">
+        <button type="submit" className="rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black disabled:opacity-60">
           {saved ? 'Saved' : 'Save settings'}
         </button>
       </form>
