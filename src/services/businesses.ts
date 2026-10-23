@@ -50,6 +50,13 @@ export async function markBusinessPaid(business: Business): Promise<void> {
   })
 }
 
+// Starts the 7-day MIRA Preview trial. The database decides who is eligible and when it ends.
+export async function startTrial(): Promise<Business> {
+  const { data, error } = await supabase.rpc('start_my_trial')
+  if (error) throw new Error(error.message)
+  return data as Business
+}
+
 export async function fetchPlanFeatures(plan: Plan): Promise<PlanFeatures> {
   const { data, error } = await supabase.from('plan_features').select('feature, enabled').eq('plan', plan)
   if (error) throw error
