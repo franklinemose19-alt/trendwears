@@ -7,8 +7,8 @@ export default function InstalledAppNotice({ businessName, onContinue }: { busin
       <Smartphone size={28} className="text-stone" />
       <h1 className="mt-4 font-display text-2xl text-ink">Installed app not available</h1>
       <p className="mt-2 max-w-sm text-stone">
-        The installable-store experience requires an active Popular subscription, and {businessName} is not on one
-        right now. The store catalogue is still available.
+        The installable-store experience requires an active MIRA Signature subscription, and {businessName} is not on
+        one right now. The store catalogue is still available.
       </p>
       <button
         onClick={onContinue}
