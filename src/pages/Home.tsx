@@ -5,8 +5,8 @@ import { useProducts } from '@/hooks/useProducts'
 import { useBusiness } from '@/contexts/BusinessContext'
 import ProductGrid from '@/components/ProductGrid'
 import { sortProducts } from '@/services/products'
-
-const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes']
+import { categoriesIn } from '@/utils/productOptions'
+import { normalizeWhatsAppNumber } from '@/utils/whatsapp'
 
 export default function Home() {
   const { business, slug, features } = useBusiness()
@@ -19,9 +19,12 @@ export default function Home() {
     () => (features.featured_products ? available.filter((p) => p.featured).slice(0, 4) : []),
     [available, features.featured_products]
   )
+  // The category strip follows what this store actually sells.
+  const categories = useMemo(() => categoriesIn(available).slice(0, 8), [available])
 
   const whatsappNumber = business?.whatsapp_number ?? ''
-  const waLink = whatsappNumber ? 'https://wa.me/' + whatsappNumber.replace(/[^\d]/g, '') : ''
+  const cleaned = normalizeWhatsAppNumber(whatsappNumber)
+  const waLink = cleaned ? 'https://wa.me/' + cleaned : ''
 
   return (
     <div>
@@ -62,7 +65,7 @@ export default function Home() {
         </div>
       </section>
 
-      {features.categories && (
+      {features.categories && categories.length > 0 && (
         <section className="border-y border-ink/10 py-4 md:py-6">
           <div className="mx-auto flex max-w-6xl gap-5 overflow-x-auto px-4 text-sm md:gap-6 md:px-5">
             {categories.map((c) => (
