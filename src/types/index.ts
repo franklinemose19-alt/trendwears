@@ -1,4 +1,5 @@
 export type ProductStatus = 'available' | 'sold' | 'draft'
+export type ProductAudience = 'men' | 'women' | 'unisex'
 export type BusinessStatus = 'active' | 'suspended' | 'pending'
 export type Plan = 'basic' | 'popular' | 'pro'
 export type FeatureName = 'cart' | 'favorites' | 'customer_accounts' | 'notifications' | 'promotions' | 'analytics' | 'advanced_customization' | 'flash_sales' | 'in_app_payment' | 'installable_store' | 'categories' | 'search_filter' | 'featured_products' | 'inquiries' | 'custom_branding'
@@ -35,8 +36,11 @@ export interface Product {
   price: number
   sale_price: number | null
   featured: boolean
+  audience?: ProductAudience | null
   category: string
   size: string
+  sizes?: string[]
+  colors?: string[]
   condition: string
   description: string | null
   images: string[]
