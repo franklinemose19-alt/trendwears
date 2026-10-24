@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Upload, X } from 'lucide-react'
 import { uploadProductImage } from '@/services/admin'
 import { validateImageFile, compressImage } from '@/utils/images'
-import type { Product, ProductStatus } from '@/types'
+import { AUDIENCES, AUDIENCE_LABELS, CATEGORY_SUGGESTIONS, parseList } from '@/utils/productOptions'
+import type { Product, ProductAudience, ProductStatus } from '@/types'
 
 type ProductDraft = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'business_id'>
 
@@ -19,8 +20,7 @@ interface Props {
   imagesUsedElsewhere: number
 }
 
-const categories = ['Jackets', 'Jeans', 'Shirts', 'T-Shirts', 'Pants', 'Shoes', 'Other']
-const conditions = ['Excellent', 'Good', 'Fair']
+const conditions = ['New', 'Excellent', 'Good', 'Fair']
 
 export default function ProductForm({
   initial,
@@ -37,8 +37,11 @@ export default function ProductForm({
   const [name, setName] = useState(initial?.name ?? '')
   const [price, setPrice] = useState(initial?.price?.toString() ?? '')
   const [salePrice, setSalePrice] = useState(initial?.sale_price?.toString() ?? '')
-  const [category, setCategory] = useState(initial?.category ?? (allowCategories ? categories[0] : 'Other'))
-  const [size, setSize] = useState(initial?.size ?? '')
+  const [audience, setAudience] = useState<ProductAudience | ''>(initial?.audience ?? '')
+  const [category, setCategory] = useState(initial?.category ?? '')
+  // Older products only have one "size" text, so it fills the list when editing.
+  const [sizesText, setSizesText] = useState(initial?.sizes?.length ? initial.sizes.join(', ') : (initial?.size ?? ''))
+  const [colorsText, setColorsText] = useState((initial?.colors ?? []).join(', '))
   const [condition, setCondition] = useState(initial?.condition ?? conditions[0])
   const [description, setDescription] = useState(initial?.description ?? '')
   const [status, setStatus] = useState<ProductStatus>(initial?.status ?? 'available')
@@ -91,13 +94,19 @@ export default function ProductForm({
     e.preventDefault()
     setSaving(true)
     try {
+      const sizes = parseList(sizesText)
+      const colors = parseList(colorsText)
       await onSubmit({
         name,
         price: Number(price),
         sale_price: allowFlashSale && salePrice ? Number(salePrice) : null,
         featured: allowFeatured ? featured : (initial?.featured ?? false),
-        category,
-        size,
+        // Men / Women / Unisex and categories belong to MIRA Signature; other plans keep what is already saved.
+        audience: allowCategories ? (audience || null) : (initial?.audience ?? null),
+        category: allowCategories ? (category.trim() || 'Other') : (initial?.category ?? 'Other'),
+        size: sizes.join(', '),
+        sizes,
+        colors,
         condition,
         description: description || null,
         images,
@@ -114,18 +123,19 @@ export default function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-white/10 p-6">
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm text-white/60">Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required className={inputCls} />
+          <label htmlFor="pf-name" className="mb-1 block text-sm text-white/60">Name</label>
+          <input id="pf-name" value={name} onChange={(e) => setName(e.target.value)} required className={inputCls} />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-white/60">Price (KSh)</label>
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className={inputCls} />
+          <label htmlFor="pf-price" className="mb-1 block text-sm text-white/60">Price (KSh)</label>
+          <input id="pf-price" type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className={inputCls} />
         </div>
 
         {allowFlashSale && (
           <div className="md:col-span-2">
-            <label className="mb-1 block text-sm text-white/60">Flash sale price (KSh, optional)</label>
+            <label htmlFor="pf-sale" className="mb-1 block text-sm text-white/60">Flash sale price (KSh, optional)</label>
             <input
+              id="pf-sale"
               type="number"
               value={salePrice}
               onChange={(e) => setSalePrice(e.target.value)}
@@ -136,26 +146,63 @@ export default function ProductForm({
         )}
 
         {allowCategories && (
-          <div>
-            <label className="mb-1 block text-sm text-white/60">Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
-              {categories.map((c) => <option key={c}>{c}</option>)}
-            </select>
-          </div>
+          <>
+            <div>
+              <label htmlFor="pf-audience" className="mb-1 block text-sm text-white/60">For</label>
+              <select id="pf-audience" value={audience} onChange={(e) => setAudience(e.target.value as ProductAudience | '')} className={inputCls}>
+                <option value="">Not specified</option>
+                {AUDIENCES.map((a) => <option key={a} value={a}>{AUDIENCE_LABELS[a]}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="pf-category" className="mb-1 block text-sm text-white/60">Category</label>
+              <input
+                id="pf-category"
+                list="pf-category-options"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g. Hoodies, Dresses, Sneakers"
+                className={inputCls}
+              />
+              <datalist id="pf-category-options">
+                {CATEGORY_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
+              </datalist>
+            </div>
+          </>
         )}
+
         <div>
-          <label className="mb-1 block text-sm text-white/60">Size</label>
-          <input value={size} onChange={(e) => setSize(e.target.value)} required className={inputCls} />
+          <label htmlFor="pf-sizes" className="mb-1 block text-sm text-white/60">Sizes (optional)</label>
+          <input
+            id="pf-sizes"
+            value={sizesText}
+            onChange={(e) => setSizesText(e.target.value)}
+            placeholder="S, M, L, XL  or  40, 41, 42"
+            className={inputCls}
+          />
+          <p className="mt-1 text-xs text-white/40">Separate with commas. Leave blank for items without sizes, like bags.</p>
         </div>
         <div>
-          <label className="mb-1 block text-sm text-white/60">Condition</label>
-          <select value={condition} onChange={(e) => setCondition(e.target.value)} className={inputCls}>
+          <label htmlFor="pf-colors" className="mb-1 block text-sm text-white/60">Colours (optional)</label>
+          <input
+            id="pf-colors"
+            value={colorsText}
+            onChange={(e) => setColorsText(e.target.value)}
+            placeholder="Black, White, Olive"
+            className={inputCls}
+          />
+          <p className="mt-1 text-xs text-white/40">Customers pick from these when they order.</p>
+        </div>
+
+        <div>
+          <label htmlFor="pf-condition" className="mb-1 block text-sm text-white/60">Condition</label>
+          <select id="pf-condition" value={condition} onChange={(e) => setCondition(e.target.value)} className={inputCls}>
             {conditions.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm text-white/60">Availability</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value as ProductStatus)} className={inputCls}>
+          <label htmlFor="pf-status" className="mb-1 block text-sm text-white/60">Availability</label>
+          <select id="pf-status" value={status} onChange={(e) => setStatus(e.target.value as ProductStatus)} className={inputCls}>
             <option value="available">Available</option>
             <option value="sold">Sold</option>
             <option value="draft">Draft</option>
@@ -171,13 +218,13 @@ export default function ProductForm({
       )}
 
       <div>
-        <label className="mb-1 block text-sm text-white/60">Description</label>
-        <textarea value={description ?? ''} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} />
+        <label htmlFor="pf-desc" className="mb-1 block text-sm text-white/60">Description</label>
+        <textarea id="pf-desc" value={description ?? ''} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} />
       </div>
 
       <div>
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-          <label className="text-sm text-white/60">Images</label>
+          <span className="text-sm text-white/60">Images</span>
           <span className="text-xs text-white/40">
             {usedNow} / {imageLimit} images used - {remaining} remaining
           </span>
@@ -185,9 +232,10 @@ export default function ProductForm({
         <div className="flex flex-wrap gap-3">
           {images.map((url, i) => (
             <div key={url} className="relative h-20 w-20">
-              <img src={url} className="h-full w-full rounded-lg object-cover" />
+              <img src={url} alt="" className="h-full w-full rounded-lg object-cover" />
               <button
                 type="button"
+                aria-label="Remove image"
                 onClick={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}
                 className="absolute -right-2 -top-2 rounded-full bg-black p-1"
               >
@@ -206,6 +254,7 @@ export default function ProductForm({
               type="file"
               multiple
               accept="image/jpeg,image/png,image/webp"
+              aria-label="Add images"
               className="hidden"
               disabled={uploading || remaining <= 0}
               onChange={(e) => {
