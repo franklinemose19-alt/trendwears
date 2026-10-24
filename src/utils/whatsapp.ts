@@ -1,21 +1,73 @@
 import type { Product } from '@/types'
 
+// Turns the way a Kenyan merchant might type a number into the international form WhatsApp links need.
+// 0712 345 678, +254 712 345 678, 254712345678 and 712345678 all become 254712345678.
+// Returns null when the number cannot be a real WhatsApp number.
+export function normalizeWhatsAppNumber(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  let digits = String(raw).replace(/[^\d]/g, '')
+  if (!digits) return null
+  if (digits.startsWith('00')) digits = digits.slice(2)
+
+  if (digits.startsWith('2540') && digits.length === 13) digits = '254' + digits.slice(4) // +254 (0)712...
+  if (digits.startsWith('254')) return digits.length === 12 ? digits : null
+  if (digits.startsWith('0')) return digits.length === 10 ? '254' + digits.slice(1) : null
+  if (digits.length === 9 && /^[71]/.test(digits)) return '254' + digits
+  if (digits.length >= 10 && digits.length <= 15) return digits // another country, already with its country code
+  return null
+}
+
+export function whatsappLink(number: string | null | undefined, message: string): string | null {
+  const normalized = normalizeWhatsAppNumber(number)
+  return normalized ? 'https://wa.me/' + normalized + '?text=' + encodeURIComponent(message) : null
+}
+
+// Used only when a store has no usable number: opens WhatsApp's own chooser instead of a broken link.
+function fallbackLink(message: string): string {
+  return 'https://wa.me/?text=' + encodeURIComponent(message)
+}
+
+const money = (n: number) => 'KSh ' + n.toLocaleString('en-KE')
+
+export interface EnquiryInput {
+  businessName: string
+  productName: string
+  price: number
+  quantity?: number
+  size?: string
+  colour?: string
+  productUrl?: string
+}
+
+// Only the details that exist are included. Opening WhatsApp is an enquiry, not a confirmed order.
+export function buildProductEnquiry(i: EnquiryInput): string {
+  const parts = [
+    'Hello ' + i.businessName + ", I'm interested in " + i.productName + '.',
+    'The listed price is ' + money(i.price) + '.',
+  ]
+  if (i.quantity && i.quantity > 0) parts.push('Quantity: ' + i.quantity + '.')
+  if (i.size) parts.push('Size: ' + i.size + '.')
+  if (i.colour) parts.push('Colour: ' + i.colour + '.')
+  parts.push('Is it available, and can you confirm delivery options?')
+
+  let message = parts.join(' ')
+  if (i.productUrl) message += '\n\nProduct: ' + i.productUrl
+  return message
+}
+
 export function orderProduct(
   businessName: string,
   product: Pick<Product, 'name' | 'price' | 'sale_price'>,
-  whatsappNumber: string
+  whatsappNumber: string,
+  options: { size?: string; colour?: string; quantity?: number; productUrl?: string } = {}
 ): string {
-  const effectivePrice = product.sale_price ?? product.price
-
-  const message =
-    'Hi ' + businessName + ',\n\n' +
-    'I would like to order:\n\n' +
-    product.name + '\n' +
-    'Price: KSh ' + effectivePrice.toLocaleString() + '\n\n' +
-    'Please let me know if it is still available.'
-
-  const digits = whatsappNumber.replace(/[^\d]/g, '')
-  return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message)
+  const message = buildProductEnquiry({
+    businessName,
+    productName: product.name,
+    price: product.sale_price ?? product.price,
+    ...options,
+  })
+  return whatsappLink(whatsappNumber, message) ?? fallbackLink(message)
 }
 
 export function orderSavedProducts(
@@ -24,7 +76,7 @@ export function orderSavedProducts(
   whatsappNumber: string
 ): string {
   const lines = products
-    .map((p, i) => (i + 1) + '. ' + p.name + ' - KSh ' + p.price.toLocaleString())
+    .map((p, i) => (i + 1) + '. ' + p.name + ' - ' + money(p.price))
     .join('\n')
 
   const message =
@@ -33,8 +85,7 @@ export function orderSavedProducts(
     lines + '\n\n' +
     'Please let me know which items are still available.'
 
-  const digits = whatsappNumber.replace(/[^\d]/g, '')
-  return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message)
+  return whatsappLink(whatsappNumber, message) ?? fallbackLink(message)
 }
 
 export function orderCart(
@@ -43,7 +94,7 @@ export function orderCart(
   whatsappNumber: string
 ): string {
   const lines = items
-    .map((i) => i.quantity + 'x ' + i.name + ' - KSh ' + (i.price * i.quantity).toLocaleString())
+    .map((i) => i.quantity + 'x ' + i.name + ' - ' + money(i.price * i.quantity))
     .join('\n')
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
@@ -52,9 +103,8 @@ export function orderCart(
     'Hi ' + businessName + ',\n\n' +
     'I would like to order:\n\n' +
     lines + '\n\n' +
-    'Order total: KSh ' + total.toLocaleString() + '\n\n' +
+    'Order total: ' + money(total) + '\n\n' +
     'Please let me know if these are still available.'
 
-  const digits = whatsappNumber.replace(/[^\d]/g, '')
-  return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message)
+  return whatsappLink(whatsappNumber, message) ?? fallbackLink(message)
 }
