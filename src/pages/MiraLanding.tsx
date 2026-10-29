@@ -4,6 +4,7 @@ import { Check, Lock, Smartphone, Sparkles } from 'lucide-react'
 import { usePlans } from '@/hooks/usePlans'
 import { PREVIEW_TRIAL_DAYS } from '@/config'
 import ReferEarnBanner from '@/components/ReferEarnBanner'
+import DemoSection from '@/demo/DemoSection'
 import PayInstructions from '@/components/PayInstructions'
 import InstallButton from '@/components/InstallButton'
 import { activateManifest, MIRA_MANIFEST_HREF } from '@/utils/installPrompt'
@@ -114,6 +115,8 @@ export default function MiraLanding() {
           </Link>
         </div>
       </section>
+
+      <DemoSection essential={essential} signature={signature} atelier={atelier} />
 
       <section className="mx-auto max-w-5xl px-5 pb-16">
         <ReferEarnBanner variant="landing" />
