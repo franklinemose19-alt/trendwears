@@ -3,6 +3,8 @@ import { Check, Lock, MessageCircle } from 'lucide-react'
 import { fetchOverviewStats } from '@/services/admin'
 import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
 import { fetchImageUsage } from '@/services/plans'
+import { fetchMyPayments } from '@/services/payments'
+import { syncTrialStatus } from '@/services/trial'
 import { getSubscriptionState } from '@/utils/subscription'
 import { getTrialState } from '@/utils/trial'
 import { PREVIEW_TRIAL_DAYS, supportWhatsAppUrl } from '@/config'
@@ -15,7 +17,8 @@ import ImageUsageBar from '@/components/ImageUsageBar'
 import ReferEarnBanner from '@/components/ReferEarnBanner'
 import InstallableStoreCard from '@/components/InstallableStoreCard'
 import TrialCard from '@/components/TrialCard'
-import type { Business, OverviewStats, PlanFeatures } from '@/types'
+import PaymentPanel from '@/components/PaymentPanel'
+import type { Business, OverviewStats, PaymentRecord, PlanFeatures } from '@/types'
 
 const featureLabels: [keyof PlanFeatures, string][] = [
   ['categories', 'Product categories'],
@@ -58,16 +61,21 @@ export default function AdminDashboard() {
   const [business, setBusiness] = useState<Business | null>(null)
   const [features, setFeatures] = useState<PlanFeatures | null>(null)
   const [usedImages, setUsedImages] = useState<number | null>(null)
+  const [payments, setPayments] = useState<PaymentRecord[]>([])
+  
+   // Loads everything from the database again. Used on first load and after a payment is sent or refreshed.
+  async function loadAll() {
+    try { await syncTrialStatus() } catch { /* the label is cosmetic: access follows the dates */ }
+    const b = await fetchMyBusiness()
+    if (!b) return
+    setBusiness(b)
+    fetchOverviewStats(b.id).then(setStats)
+    fetchPlanFeatures(b.plan).then(setFeatures)
+    fetchImageUsage(b.id).then(setUsedImages).catch(() => setUsedImages(null))
+    fetchMyPayments(b.id).then(setPayments).catch(() => setPayments([]))
+  }
 
-  useEffect(() => {
-    fetchMyBusiness().then((b) => {
-      if (!b) return
-      setBusiness(b)
-      fetchOverviewStats(b.id).then(setStats)
-      fetchPlanFeatures(b.plan).then(setFeatures)
-      fetchImageUsage(b.id).then(setUsedImages).catch(() => setUsedImages(null))
-    })
-  }, [])
+  useEffect(() => { loadAll() }, [])
 
   const notice = business ? subscriptionMessage(business) : null
   const plan = business ? byId(business.plan) : null
@@ -76,7 +84,9 @@ export default function AdminDashboard() {
   const pro = byId('pro')
   const trial = business ? getTrialState(business).state : 'none'
   const onTrial = trial === 'active' || trial === 'expired'
-
+  const pendingPayments = payments.filter((p) => p.status === 'pending')
+  const lastPaymentRejected = pendingPayments.length === 0 && payments[0]?.status === 'rejected'
+  
   const planTitle = !plan
     ? ''
     : trial === 'active'
@@ -121,7 +131,13 @@ export default function AdminDashboard() {
               <p className="text-sm text-white/60">Your plan</p>
               <p className="mt-1 text-lg font-medium">{planTitle}</p>
               <p className="mt-1 text-xs text-white/50">Status: {statusText(business)}. Hosting and website maintenance are included.</p>
-            </div>
+            </div> 
+            {pendingPayments.length > 0 && (
+                <p className="mt-1 text-xs text-yellow-300">A payment is waiting to be checked by MIRA. Your plan changes only after it is confirmed.</p>
+              )}
+              {lastPaymentRejected && (
+                <p className="mt-1 text-xs text-red-300">Your last payment could not be confirmed. See "Confirm your payment" below.</p>
+              )}
             <SubscriptionCountdown nextBillingDate={business.next_billing_date} />
           </div>
           {notice && <p className="mt-3 text-sm text-red-400">{notice}</p>}
@@ -145,7 +161,9 @@ export default function AdminDashboard() {
           </a>
         </div>
       )}
-
+      {business && (
+        <PaymentPanel business={business} payments={payments} essential={essential} signature={popular} onChanged={loadAll} />
+      )}
       {business && plan && usedImages !== null && (
         <div className="mt-6">
           <ImageUsageBar
