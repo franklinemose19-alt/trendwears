@@ -17,10 +17,12 @@ export interface Business {
   plan: Plan
   status: BusinessStatus
   owner_user_id: string | null
-  subscription_status: 'unpaid' | 'paid'
+  subscription_status: 'unpaid' | 'paid' | 'trial' | 'trial_expired' | 'founding'
   next_billing_date: string | null
   trial_started_at: string | null
   trial_ends_at: string | null
+  founding_ambassador?: boolean
+  founding_ambassador_since?: string | null
   instagram_url: string | null
   tiktok_url: string | null
   facebook_url: string | null
@@ -92,4 +94,24 @@ export interface PlanInfo {
   monthly_price: number | null
   max_images: number
   purchasable: boolean
+}
+
+export type PaymentStatus = 'pending' | 'verified' | 'rejected' | 'cancelled'
+
+export interface PaymentRecord {
+  id: string
+  business_id: string
+  plan: 'basic' | 'popular'
+  expected_amount: number
+  reference: string
+  status: PaymentStatus
+  submitted_at: string
+  reviewed_at: string | null
+  review_note: string | null
+  period_start: string | null
+  period_end: string | null
+}
+
+export interface PaymentWithBusiness extends PaymentRecord {
+  businesses: { name: string; slug: string } | null
 }
