@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react'
 import { getSubscriptionState, formatDuration } from '@/utils/subscription'
+import { useServerNow } from '@/hooks/useServerNow'
 
-export default function SubscriptionCountdown({ nextBillingDate }: { nextBillingDate: string | null }) {
-  const [now, setNow] = useState(Date.now())
+interface Props {
+  nextBillingDate: string | null
+  founding?: boolean
+}
 
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 30000)
-    return () => clearInterval(timer)
-  }, [])
+export default function SubscriptionCountdown({ nextBillingDate, founding }: Props) {
+  const now = useServerNow()
+
+  if (founding) {
+    return <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/80">Founding Ambassador - lifetime Essential</span>
+  }
 
   const { state, msLeft } = getSubscriptionState({ next_billing_date: nextBillingDate }, now)
 
