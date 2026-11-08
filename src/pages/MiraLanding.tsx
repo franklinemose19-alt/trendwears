@@ -38,7 +38,7 @@ export default function MiraLanding() {
   }, [])
 
   const previewFeatures = [
-    PREVIEW_TRIAL_DAYS + ' days free - nothing is charged automatically',
+    PREVIEW_TRIAL_DAYS + ' days free - no automatic charges, no payment details',
     'Build a real boutique storefront',
     'Add your products and up to ' + essential.max_images + ' images',
     'Test customer enquiries on WhatsApp',
@@ -99,21 +99,29 @@ export default function MiraLanding() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-2xl px-5 pb-16 pt-10 text-center">
-        <h1 className="font-display text-4xl leading-tight md:text-5xl">
-          Your branded online store, powered by MIRA.
-        </h1>
-        <p className="mx-auto mt-4 max-w-md text-white/60">
-          Create a storefront, add your products, and take orders on WhatsApp - no checkout, no complexity.
+      <section className="mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
+        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/50">Your branded online store, powered by MIRA.</p>
+        <h1 className="mt-4 font-display text-6xl leading-none md:text-8xl">{PREVIEW_TRIAL_DAYS} DAYS FREE.</h1>
+        <p className="mt-5 font-display text-2xl text-white/90 md:text-3xl">Your boutique deserves its own online store.</p>
+        <p className="mx-auto mt-5 max-w-xl text-sm text-white/60 md:text-base">
+          Launch your branded online store, showcase your products and let customers browse your collection and order through WhatsApp.
+          Experience MIRA free for {PREVIEW_TRIAL_DAYS} days.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             to="/register"
-            className="inline-block rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition-transform hover:scale-[1.02]"
+            className="w-full rounded-full bg-white px-8 py-3.5 text-sm font-medium tracking-wide text-black transition-transform hover:scale-[1.02] sm:w-auto"
           >
-            Create your store
+            CREATE MY FREE STORE
           </Link>
+          <a
+            href="#demo"
+            className="w-full rounded-full border border-white/30 px-8 py-3.5 text-sm font-medium tracking-wide text-white hover:border-white/60 sm:w-auto"
+          >
+            EXPLORE DEMO STORES
+          </a>
         </div>
+        <p className="mt-4 text-xs text-white/50">No automatic charges. No payment details required.</p>
       </section>
 
       <DemoSection essential={essential} signature={signature} atelier={atelier} />
@@ -128,7 +136,7 @@ export default function MiraLanding() {
           Start with a free {PREVIEW_TRIAL_DAYS}-day trial, then choose the package that fits your boutique.
         </p>
         <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {/* PREVIEW - 7 day trial */}
+          {/* PREVIEW - free trial */}
           <div className="relative rounded-2xl border border-dashed border-white/25 p-6">
             <span className="absolute -top-3 left-5 inline-flex items-center gap-1 rounded-full border border-white/20 bg-[#0a0a0b] px-3 py-1 text-[11px] text-white/80">
               <Sparkles size={11} /> {PREVIEW_TRIAL_DAYS}-DAY FREE TRIAL
