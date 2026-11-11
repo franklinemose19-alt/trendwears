@@ -10,15 +10,11 @@ export function addOneMonth(from: Date): Date {
 
 export type SubscriptionState = 'none' | 'active' | 'expired'
 
-// 100 years: used for founding ambassadors, whose access has no end date
-export const NO_EXPIRY_MS = 100 * 365 * 86400000
-
+// A store is live while its billing date (subscription, free trial or Founding Partner period) is in the future.
 export function getSubscriptionState(
-  business: Pick<Business, 'next_billing_date' | 'founding_ambassador'>,
+  business: Pick<Business, 'next_billing_date'>,
   now: number = Date.now()
 ): { state: SubscriptionState; msLeft: number } {
-  // Founding ambassadors have complimentary lifetime MIRA Essential access, independent of any billing date.
-  if (business.founding_ambassador) return { state: 'active', msLeft: NO_EXPIRY_MS }
   if (!business.next_billing_date) return { state: 'none', msLeft: 0 }
   const msLeft = new Date(business.next_billing_date).getTime() - now
   return msLeft > 0 ? { state: 'active', msLeft } : { state: 'expired', msLeft }
