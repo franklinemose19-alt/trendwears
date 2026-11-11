@@ -17,12 +17,13 @@ export interface Business {
   plan: Plan
   status: BusinessStatus
   owner_user_id: string | null
-  subscription_status: 'unpaid' | 'paid' | 'trial' | 'trial_expired' | 'founding'
+  subscription_status: 'unpaid' | 'paid' | 'trial' | 'trial_expired' | 'founding' | 'founding_ended'
   next_billing_date: string | null
   trial_started_at: string | null
   trial_ends_at: string | null
   founding_ambassador?: boolean
   founding_ambassador_since?: string | null
+  founding_ends_at?: string | null
   instagram_url: string | null
   tiktok_url: string | null
   facebook_url: string | null
