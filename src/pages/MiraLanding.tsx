@@ -99,29 +99,31 @@ export default function MiraLanding() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
-        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/50">Your branded online store, powered by MIRA.</p>
-        <h1 className="mt-4 font-display text-6xl leading-none md:text-8xl">{PREVIEW_TRIAL_DAYS} DAYS FREE.</h1>
-        <p className="mt-5 font-display text-2xl text-white/90 md:text-3xl">Your boutique deserves its own online store.</p>
+            <section className="mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
+        <p className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-white/70">
+          <Sparkles size={12} aria-hidden="true" /> {PREVIEW_TRIAL_DAYS} DAYS FREE
+        </p>
+        <h1 className="mt-6 font-display text-5xl leading-[1.05] md:text-7xl">Take Your Business Beyond the Shop.</h1>
         <p className="mx-auto mt-5 max-w-xl text-sm text-white/60 md:text-base">
-          Launch your branded online store, showcase your products and let customers browse your collection and order through WhatsApp.
-          Experience MIRA free for {PREVIEW_TRIAL_DAYS} days.
+          Your own branded online store, powered by MIRA. Let customers discover your products, browse your catalogue and place orders through WhatsApp.
+        </p>
+        <p className="mx-auto mt-4 max-w-md text-sm text-white/80">
+          No upfront subscription payment. No automatic charges. Start your online store today and experience MIRA.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             to="/register"
             className="w-full rounded-full bg-white px-8 py-3.5 text-sm font-medium tracking-wide text-black transition-transform hover:scale-[1.02] sm:w-auto"
           >
-            CREATE MY FREE STORE
+            Start My Free Store
           </Link>
           <a
             href="#demo"
             className="w-full rounded-full border border-white/30 px-8 py-3.5 text-sm font-medium tracking-wide text-white hover:border-white/60 sm:w-auto"
           >
-            EXPLORE DEMO STORES
+            Explore demo stores
           </a>
         </div>
-        <p className="mt-4 text-xs text-white/50">No automatic charges. No payment details required.</p>
       </section>
 
       <DemoSection essential={essential} signature={signature} atelier={atelier} />
