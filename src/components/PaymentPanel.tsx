@@ -81,8 +81,7 @@ export default function PaymentPanel({ business, payments, essential, signature,
     }
   }
 
-  // Founding ambassadors have complimentary Essential access: there is nothing to pay.
-  if (business.founding_ambassador || choices.length === 0) return null
+    if (choices.length === 0) return null
 
   return (
     <section id="payments" aria-labelledby="payments-heading" className="mt-6 rounded-2xl border border-white/10 p-5">
