@@ -3,7 +3,7 @@ import { Sparkles } from 'lucide-react'
 import { startTrial } from '@/services/businesses'
 import { useServerNow } from '@/hooks/useServerNow'
 import { PREVIEW_TRIAL_DAYS } from '@/config'
-import { getTrialState, trialLengthDays, trialCountdownLabel, trialReminder, formatTrialDate } from '@/utils/trial'
+import { getTrialState, getFoundingState, trialLengthDays, trialCountdownLabel, trialReminder, foundingReminder, formatTrialDate } from '@/utils/trial'
 import type { Business, PlanInfo } from '@/types'
 
 interface Props {
@@ -36,24 +36,9 @@ export default function TrialCard({ business, essential, signature, onStarted }:
   const [error, setError] = useState('')
   const inFlight = useRef(false)
 
-  // Founding ambassadors are never on the promotional trial.
-  if (business.founding_ambassador) {
-    return (
-      <section aria-label="Founding ambassador" className="mt-6 rounded-2xl border border-white/20 bg-white/5 p-5">
-        <p className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.2em] text-white/60">
-          <Sparkles size={12} aria-hidden="true" /> MIRA FOUNDING AMBASSADOR
-        </p>
-        <h2 className="mt-2 font-display text-xl">Complimentary lifetime MIRA Essential</h2>
-        <p className="mt-1 text-sm text-white/60">
-          Your boutique is one of the MIRA Founding 3 ambassadors. Your Essential access is part of your partnership agreement,
-          so there is no free trial to track and no payment to make.
-        </p>
-      </section>
-    )
-  }
-
   const { state, msLeft } = getTrialState(business, now)
   const length = trialLengthDays(business)
+  const founding = getFoundingState(business, now)
 
   async function handleStart() {
     if (busy || inFlight.current) return
@@ -68,6 +53,44 @@ export default function TrialCard({ business, essential, signature, onStarted }:
       inFlight.current = false
       setBusy(false)
     }
+  }
+
+  // Founding Partners: 3 months of complimentary MIRA Essential, separate from the free trial. Then they choose a plan.
+  if (founding.state === 'active' && business.founding_ends_at) {
+    const reminder = foundingReminder(founding.msLeft, business.founding_ends_at)
+    return (
+      <section aria-label="Founding partner" className="mt-6 rounded-2xl border border-white/20 bg-white/5 p-5">
+        <p className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.2em] text-white/60">
+          <Sparkles size={12} aria-hidden="true" /> MIRA FOUNDING PARTNER
+        </p>
+        <h2 className="mt-2 font-display text-xl">Complimentary MIRA Essential for 3 months</h2>
+        <p className="mt-2 font-display text-3xl" aria-live="polite">{trialCountdownLabel(founding.msLeft)}</p>
+        <dl className="mt-3 text-sm">
+          <dt className="text-white/40">Your complimentary period ends</dt>
+          <dd>{formatTrialDate(business.founding_ends_at)}</dd>
+        </dl>
+        {reminder && <p role="status" className="mt-4 rounded-lg bg-yellow-500/10 px-3 py-2 text-sm text-yellow-200">{reminder}</p>}
+        <p className="mt-4 text-sm text-white/60">
+          This is separate from the free trial. When your 3 months end, choose a plan to keep your store online. Nothing is charged automatically.
+        </p>
+        <PlanBoxes essential={essential} signature={signature} />
+        <a href="#payments" className="mt-4 inline-block rounded-full border border-white/25 px-6 py-2.5 text-sm text-white/80 hover:border-white/50">Choose a plan early</a>
+      </section>
+    )
+  }
+
+  if (founding.state === 'ended') {
+    return (
+      <section aria-label="Founding partner period ended" className="mt-6 rounded-2xl border border-white/20 bg-white/5 p-5">
+        <p className="text-[11px] tracking-[0.2em] text-white/50">FOUNDING PARTNER PERIOD ENDED</p>
+        <h2 className="mt-1 font-display text-xl">Your 3-month Founding Partner period has ended. Choose a plan to continue using your store.</h2>
+        <p className="mt-1 text-sm text-white/60">
+          Your products, images, branding and settings are saved. Subscribe to bring your store back online. Nothing is charged automatically.
+        </p>
+        <PlanBoxes essential={essential} signature={signature} />
+        <a href="#payments" className="mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-medium text-black">Choose a plan</a>
+      </section>
+    )
   }
 
   if (state === 'eligible') {
