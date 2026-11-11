@@ -4,7 +4,7 @@ import { fetchAllBusinesses, updateBusinessStatus, updateBusinessPlan } from '@/
 import { recordPayment } from '@/services/payments'
 import { syncTrialStatus, setFoundingAmbassador } from '@/services/trial'
 import { getSubscriptionState } from '@/utils/subscription'
-import { getTrialState, trialLengthDays, trialCountdownLabel, formatTrialDate } from '@/utils/trial'
+import { getTrialState, getFoundingState, trialLengthDays, trialCountdownLabel, formatTrialDate } from '@/utils/trial'
 import { validateMpesaCode, cleanMpesaCode } from '@/utils/payments'
 import { usePlans } from '@/hooks/usePlans'
 import { useServerNow } from '@/hooks/useServerNow'
@@ -25,12 +25,17 @@ const isConverted = (b: Business) => !!b.trial_started_at && b.subscription_stat
 
 function TrialDetails({ business, now }: { business: Business; now: number }) {
   if (business.founding_ambassador) {
+    const f = getFoundingState(business, now)
+    const outcome = f.state === 'paid' ? 'Now a paying subscriber'
+      : f.state === 'active' ? trialCountdownLabel(f.msLeft)
+      : 'Complimentary period ended - not yet subscribed'
     return (
-      <p className="text-xs text-white/60">
-        Founding ambassador: complimentary lifetime MIRA Essential
-        {business.founding_ambassador_since ? ' since ' + new Date(business.founding_ambassador_since).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}.
-        Not on the free trial.
-      </p>
+      <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
+        <div><dt className="text-white/40">Partner period</dt><dd>3 months of MIRA Essential</dd></div>
+        <div><dt className="text-white/40">Started</dt><dd>{business.founding_ambassador_since ? formatTrialDate(business.founding_ambassador_since) : '-'}</dd></div>
+        <div><dt className="text-white/40">Ends</dt><dd>{business.founding_ends_at ? formatTrialDate(business.founding_ends_at) : '-'}</dd></div>
+        <div><dt className="text-white/40">Outcome</dt><dd>{outcome}</dd></div>
+      </dl>
     )
   }
   if (!business.trial_started_at || !business.trial_ends_at) {
@@ -167,14 +172,14 @@ export default function BusinessList() {
 
   async function handleFounding(business: Business, value: boolean) {
     const message = value
-      ? 'Make ' + business.name + ' one of the Founding 3?\n\nThey receive complimentary lifetime MIRA Essential access under their partnership agreement: no free trial and no payments. Only three stores can hold this status.'
-      : 'Remove the Founding Ambassador status from ' + business.name + '?\n\nTheir store will need a subscription or trial to stay online. Their products and settings are kept.'
+      ? 'Make ' + business.name + ' a Founding Partner?\n\nThey receive complimentary MIRA Essential for 3 months, starting today, with no free trial and no payments during that time. After that they pay like every other store. Only three stores can hold this status.'
+      : 'Remove the Founding Partner status from ' + business.name + '?\n\nTheir complimentary access ends immediately. Their products and settings are kept.'
     if (!confirm(message)) return
     try {
       await setFoundingAmbassador(business.id, value)
       load()
     } catch (err: any) {
-      alert(err?.message ?? 'Could not change the founding ambassador status.')
+      alert(err?.message ?? 'Could not change the Founding Partner status.')
     }
   }
 
@@ -184,7 +189,7 @@ export default function BusinessList() {
       <p className="mt-1 text-sm text-white/50">{businesses.length} total on the platform.</p>
 
       <div role="group" aria-label="Free trial overview" className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Founding ambassadors</p><p className="mt-1 text-lg">{summary.founding} of {FOUNDING_LIMIT}</p></div>
+        <div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Founding Partners</p><p className="mt-1 text-lg">{summary.founding} of {FOUNDING_LIMIT}</p></div>
         <div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Free trials running</p><p className="mt-1 text-lg">{summary.active}</p></div>
         <div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Trials ended, not converted</p><p className="mt-1 text-lg">{summary.expired}</p></div>
         <div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Trials converted to paid</p><p className="mt-1 text-lg">{summary.converted}</p></div>
@@ -211,11 +216,13 @@ export default function BusinessList() {
             const sub = getSubscriptionState(b, now)
             const trial = getTrialState(b, now).state
             const locked = b.status === 'active' && sub.state !== 'active'
-            const statusLabel = b.founding_ambassador ? 'founding ambassador'
+            const fs = getFoundingState(b, now).state
+            const statusLabel = fs === 'active' ? 'founding partner'
+              : fs === 'ended' ? 'partner period ended'
               : trial === 'active' ? 'free trial'
               : locked ? (trial === 'expired' ? 'trial ended' : 'locked - unpaid')
               : b.status
-            const statusClass = b.founding_ambassador || trial === 'active' ? statusStyles.active : locked ? statusStyles.suspended : statusStyles[b.status]
+            const statusClass = fs === 'active' || trial === 'active' ? statusStyles.active : locked ? statusStyles.suspended : statusStyles[b.status]
 
             return (
               <div key={b.id} className="rounded-xl border border-white/10 p-4">
@@ -233,7 +240,7 @@ export default function BusinessList() {
                   <div className="flex flex-wrap items-center gap-2">
                     {b.founding_ambassador && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
-                        <Star size={11} aria-hidden="true" /> Founding Ambassador
+                        <Star size={11} aria-hidden="true" /> Founding Partner
                       </span>
                     )}
                     <span className={'rounded-full px-3 py-1 text-xs capitalize ' + statusClass}>
@@ -254,7 +261,7 @@ export default function BusinessList() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <SubscriptionCountdown nextBillingDate={b.next_billing_date} founding={b.founding_ambassador} />
+                  <SubscriptionCountdown nextBillingDate={b.next_billing_date} />
                 </div>
                 <div className="mt-3 rounded-lg bg-white/[0.03] p-3">
                   <TrialDetails business={b} now={now} />
@@ -278,17 +285,15 @@ export default function BusinessList() {
                     {b.plan === 'pro' && <option value="pro" disabled>{byId('pro').name} (not available)</option>}
                   </select>
 
-                  {!b.founding_ambassador && (
-                    <button
-                      type="button"
-                      onClick={() => setRecordingFor(recordingFor === b.id ? null : b.id)}
-                      aria-expanded={recordingFor === b.id}
-                      className="flex items-center gap-1.5 rounded-lg bg-green-500/15 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/25"
-                    >
-                      <Banknote size={13} aria-hidden="true" />
-                      Record a payment
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setRecordingFor(recordingFor === b.id ? null : b.id)}
+                    aria-expanded={recordingFor === b.id}
+                    className="flex items-center gap-1.5 rounded-lg bg-green-500/15 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/25"
+                  >
+                    <Banknote size={13} aria-hidden="true" />
+                    Record a payment
+                  </button>
 
                   {b.founding_ambassador ? (
                     <button type="button" onClick={() => handleFounding(b, false)} className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:text-white">
@@ -302,7 +307,7 @@ export default function BusinessList() {
                       title={summary.founding >= FOUNDING_LIMIT ? 'The Founding 3 are already assigned' : undefined}
                       className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      Make Founding Ambassador
+                      Make Founding Partner
                     </button>
                   )}
 
@@ -324,7 +329,7 @@ export default function BusinessList() {
                   )}
                 </div>
 
-                {recordingFor === b.id && !b.founding_ambassador && (
+                {recordingFor === b.id && (
                   <RecordPaymentForm business={b} onDone={() => { setRecordingFor(null); load() }} />
                 )}
               </div>
