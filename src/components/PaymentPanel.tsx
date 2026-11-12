@@ -81,7 +81,7 @@ export default function PaymentPanel({ business, payments, essential, signature,
     }
   }
 
-    if (choices.length === 0) return null
+  if (choices.length === 0) return null
 
   return (
     <section id="payments" aria-labelledby="payments-heading" className="mt-6 rounded-2xl border border-white/10 p-5">
