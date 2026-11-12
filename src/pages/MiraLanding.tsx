@@ -99,7 +99,7 @@ export default function MiraLanding() {
         </div>
       </header>
 
-            <section className="mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
+      <section className="mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
         <p className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-white/70">
           <Sparkles size={12} aria-hidden="true" /> {PREVIEW_TRIAL_DAYS} DAYS FREE
         </p>
