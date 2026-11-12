@@ -350,11 +350,11 @@ export default function DemoStore({ onClose, onSeePricing, initialProductId, pla
 
         <section aria-labelledby="demo-packages" className="mt-14 rounded-2xl border border-ink/10 p-5 md:p-6">
           <h3 id="demo-packages" className="font-display text-xl">Run a boutique like this on MIRA</h3>
-          <p className="mt-1 text-sm text-stone">Pick the package that fits. MIRA Preview is a temporary 7-day trial, not a permanent free plan.</p>
+          <p className="mt-1 text-sm text-stone">Pick the package that fits. MIRA Preview is a temporary 29-day free trial, not a permanent free plan.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-dashed border-ink/25 p-4">
               <p className="text-sm font-medium">MIRA Preview</p>
-              <p className="mt-1 text-lg">KSh 0 <span className="text-xs text-stone">for 7 days</span></p>
+              <p className="mt-1 text-lg">KSh 0 <span className="text-xs text-stone">for 29 days</span></p>
             </div>
             <div className="rounded-xl border border-ink/15 p-4">
               <p className="text-sm font-medium">{plans.essential.name}</p>
