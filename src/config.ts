@@ -1,8 +1,8 @@
 import type { PlanInfo } from '@/types'
 
-export const MIRA_SUPPORT_WHATSAPP = '254111947810'
+export const MIRA_SUPPORT_WHATSAPP = '254100581367'
 export const MIRA_TILL_NUMBER = '1725838'
-export const PREVIEW_TRIAL_DAYS = 7
+export const PREVIEW_TRIAL_DAYS = 29
 
 // Fallback only. The live values (name, price, image allowance, availability) come from the `plans` table.
 // Atelier has no published price yet.
