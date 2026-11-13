@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom'
 import { fetchProductsWithStats, sortProducts } from '@/services/products'
 import { fetchViewsLast30Days } from '@/services/admin'
 import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
+import { usePlans } from '@/hooks/usePlans'
 import AnalyticsChart from '@/components/AnalyticsChart'
 import type { ProductWithStats } from '@/types'
 
 export default function AdminAnalytics() {
+  const { byId } = usePlans()
   const [products, setProducts] = useState<ProductWithStats[]>([])
   const [chartData, setChartData] = useState<{ date: string; views: number }[]>([])
   const [allowed, setAllowed] = useState<boolean | null>(null)
@@ -27,9 +29,11 @@ export default function AdminAnalytics() {
   if (!allowed) {
     return (
       <div className="rounded-2xl border border-white/10 p-8 text-center">
-        <h1 className="font-display text-xl">Analytics is a Pro feature</h1>
-        <p className="mt-2 text-sm text-white/50">Upgrade to the Pro plan to unlock sales and customer analytics.</p>
-        <Link to="/admin/settings" className="mt-6 inline-block rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-black">
+        <h1 className="font-display text-xl">Store Insights is included in {byId('popular').name}</h1>
+        <p className="mt-2 text-sm text-white/50">
+          Upgrade to see how customers find and engage with your products.
+        </p>
+        <Link to="/admin/settings?tab=subscription" className="mt-6 inline-flex min-h-[44px] items-center rounded-full bg-white px-6 text-sm font-medium text-black">
           View plan options
         </Link>
       </div>
@@ -42,16 +46,19 @@ export default function AdminAnalytics() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl">Analytics</h1>
+      <h1 className="font-display text-2xl md:text-3xl">Store Insights</h1>
+      <p className="mt-2 text-sm text-white/55">
+        Real activity on your store over the last 30 days. These are product views: visits to your store as a whole are not tracked yet.
+      </p>
 
       <div className="mt-6">
         <AnalyticsChart data={chartData} />
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
+      <div className="mt-8 grid gap-8 md:grid-cols-3">
         <Ranking title="Most viewed" items={mostViewed.map((p) => ({ label: p.name, value: p.view_count + ' views' }))} />
         <Ranking title="Most liked" items={mostLiked.map((p) => ({ label: p.name, value: p.like_count + ' likes' }))} />
-        <Ranking title="Most enquired" items={mostEnquired.map((p) => ({ label: p.name, value: p.whatsapp_click_count + ' clicks' }))} />
+        <Ranking title="Most enquired" items={mostEnquired.map((p) => ({ label: p.name, value: p.whatsapp_click_count + ' enquiries' }))} />
       </div>
     </div>
   )
@@ -59,16 +66,20 @@ export default function AdminAnalytics() {
 
 function Ranking({ title, items }: { title: string; items: { label: string; value: string }[] }) {
   return (
-    <div className="rounded-2xl border border-white/10 p-5">
-      <p className="mb-3 text-sm text-white/60">{title}</p>
-      <ol className="space-y-2 text-sm">
-        {items.map((item, i) => (
-          <li key={i} className="flex justify-between">
-            <span>{item.label}</span>
-            <span className="text-white/50">{item.value}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
+    <section>
+      <h2 className="text-xs font-medium uppercase tracking-wide text-white/40">{title}</h2>
+      {items.length === 0 ? (
+        <p className="mt-3 text-sm text-white/40">Nothing yet.</p>
+      ) : (
+        <ol className="mt-2 divide-y divide-white/10 border-y border-white/10 text-sm">
+          {items.map((item, i) => (
+            <li key={i} className="flex justify-between gap-3 py-2.5">
+              <span className="min-w-0 truncate">{item.label}</span>
+              <span className="shrink-0 text-white/50">{item.value}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
   )
 }
