@@ -14,7 +14,9 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminProducts from '@/pages/admin/AdminProducts'
+import AdminOrders from '@/pages/admin/AdminOrders'
 import AdminAnalytics from '@/pages/admin/AdminAnalytics'
+import AdminGrowth from '@/pages/admin/AdminGrowth'
 import AdminSettings from '@/pages/admin/AdminSettings'
 import BusinessList from '@/pages/mira-admin/BusinessList'
 import ProtectedRoute from '@/components/ProtectedRoute'
@@ -60,7 +62,9 @@ export default function App() {
       >
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} />
+        <Route path="orders" element={<AdminOrders />} />
         <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="growth" element={<AdminGrowth />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 
