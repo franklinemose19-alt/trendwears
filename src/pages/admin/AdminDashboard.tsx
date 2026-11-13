@@ -1,240 +1,150 @@
 import { useEffect, useState } from 'react'
-import { Check, Lock, MessageCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, Package, Share2, ChevronRight } from 'lucide-react'
 import { fetchOverviewStats } from '@/services/admin'
-import { fetchMyBusiness, fetchPlanFeatures } from '@/services/businesses'
 import { fetchImageUsage } from '@/services/plans'
-import { fetchMyPayments } from '@/services/payments'
-import { syncTrialStatus } from '@/services/trial'
-import { getSubscriptionState } from '@/utils/subscription'
-import { getTrialState } from '@/utils/trial'
-import { PREVIEW_TRIAL_DAYS, supportWhatsAppUrl } from '@/config'
+import { fetchRecentEnquiries } from '@/services/insights'
+import type { Enquiry } from '@/services/insights'
+import { useAdmin } from '@/hooks/useAdmin'
 import { usePlans } from '@/hooks/usePlans'
-import StatsCard from '@/components/StatsCard'
-import ShareStoreCard from '@/components/ShareStoreCard'
-import SubscriptionCountdown from '@/components/SubscriptionCountdown'
-import PayInstructions from '@/components/PayInstructions'
-import ImageUsageBar from '@/components/ImageUsageBar'
-import ReferEarnBanner from '@/components/ReferEarnBanner'
-import InstallableStoreCard from '@/components/InstallableStoreCard'
-import TrialCard from '@/components/TrialCard'
-import PaymentPanel from '@/components/PaymentPanel'
-import type { Business, OverviewStats, PaymentRecord, PlanFeatures } from '@/types'
+import { useServerNow } from '@/hooks/useServerNow'
+import { buildNotices, storeVisibility } from '@/utils/adminStatus'
+import { timeAgo } from '@/utils/timeAgo'
+import SubscriptionSummary from '@/components/SubscriptionSummary'
+import type { OverviewStats } from '@/types'
 
-const featureLabels: [keyof PlanFeatures, string][] = [
-  ['categories', 'Product categories'],
-  ['search_filter', 'Search and filtering'],
-  ['featured_products', 'Featured products'],
-  ['inquiries', 'Customer inquiry features'],
-  ['analytics', 'Store analytics'],
-  ['custom_branding', 'Custom branding'],
-  ['installable_store', 'Installable store (Add to Home Screen)'],
-  ['cart', 'Cart'],
-  ['favorites', 'Saved items'],
-]
-
-function statusText(business: Business): string {
-  const trial = getTrialState(business).state
-  if (trial === 'active') return 'Free trial'
-  if (trial === 'expired') return 'Trial ended'
-  if (business.status === 'pending') return 'Pending activation'
-  if (business.status === 'suspended') return 'Suspended'
-  const state = getSubscriptionState(business).state
-  if (state === 'none') return 'Not subscribed'
-  if (state === 'expired') return 'Expired'
-  return 'Active'
-}
-
-function subscriptionMessage(business: Business): string | null {
-  // While a trial is running or has ended, the trial card explains what is happening.
-  if (getTrialState(business).state !== 'none' && getTrialState(business).state !== 'eligible') return null
-  if (business.status === 'pending') return 'Your store is waiting for activation by MIRA once your payment is confirmed.'
-  if (business.status === 'suspended') return 'Your store has been suspended by MIRA. Contact MIRA support to get it back online.'
-  if (getSubscriptionState(business).state !== 'active') {
-    return 'Your subscription has expired, so your store is hidden from customers. Pay below and send the confirmation on WhatsApp, and it will go back online.'
-  }
-  return null
-}
+const toneClass = { alert: 'text-red-300', warn: 'text-yellow-200', info: 'text-white/70' } as const
 
 export default function AdminDashboard() {
+  const { business, payments, loading, reload, setBusiness } = useAdmin()
   const { byId } = usePlans()
+  const now = useServerNow()
   const [stats, setStats] = useState<OverviewStats | null>(null)
-  const [business, setBusiness] = useState<Business | null>(null)
-  const [features, setFeatures] = useState<PlanFeatures | null>(null)
   const [usedImages, setUsedImages] = useState<number | null>(null)
-  const [payments, setPayments] = useState<PaymentRecord[]>([])
-  
-   // Loads everything from the database again. Used on first load and after a payment is sent or refreshed.
-  async function loadAll() {
-    try { await syncTrialStatus() } catch { /* the label is cosmetic: access follows the dates */ }
-    const b = await fetchMyBusiness()
-    if (!b) return
-    setBusiness(b)
-    fetchOverviewStats(b.id).then(setStats)
-    fetchPlanFeatures(b.plan).then(setFeatures)
-    fetchImageUsage(b.id).then(setUsedImages).catch(() => setUsedImages(null))
-    fetchMyPayments(b.id).then(setPayments).catch(() => setPayments([]))
+  const [enquiries, setEnquiries] = useState<Enquiry[] | null>(null)
+  const [shareNote, setShareNote] = useState('')
+
+  useEffect(() => {
+    if (!business) return
+    fetchOverviewStats(business.id).then(setStats).catch(() => setStats(null))
+    fetchImageUsage(business.id).then(setUsedImages).catch(() => setUsedImages(null))
+    fetchRecentEnquiries(business.id, 5).then(setEnquiries).catch(() => setEnquiries([]))
+  }, [business?.id])
+
+  if (loading) return <p className="text-white/50">Loading...</p>
+  if (!business) return <p className="text-white/50">We could not load your store. Please refresh the page.</p>
+
+  const visibility = storeVisibility(business, now)
+  const notices = buildNotices({ business, payments, now, usedImages, imageLimit: byId(business.plan).max_images })
+
+  async function handleShare() {
+    const url = window.location.origin + '/store/' + business!.slug
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: business!.name, url })
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      setShareNote('Link copied')
+    } catch {
+      setShareNote('Copy this link: ' + url)
+    }
   }
 
-  useEffect(() => { loadAll() }, [])
+  const statItems: [string, number | string][] = [
+    ['Products', stats?.totalProducts ?? '-'],
+    ['Product views', stats?.totalViews ?? '-'],
+    ['Likes', stats?.totalLikes ?? '-'],
+    ['WhatsApp enquiries', stats?.whatsappEnquiries ?? '-'],
+  ]
 
-  const notice = business ? subscriptionMessage(business) : null
-  const plan = business ? byId(business.plan) : null
-  const essential = byId('basic')
-  const popular = byId('popular')
-  const pro = byId('pro')
-  const trial = business ? getTrialState(business).state : 'none'
-  const onTrial = trial === 'active' || trial === 'expired'
-  const pendingPayments = payments.filter((p) => p.status === 'pending')
-  const lastPaymentRejected = pendingPayments.length === 0 && payments[0]?.status === 'rejected'
-  
-  const planTitle = !plan
-    ? ''
-    : trial === 'active'
-      ? 'MIRA Preview trial - KSh 0 for ' + PREVIEW_TRIAL_DAYS + ' days'
-      : trial === 'expired'
-        ? 'MIRA Preview trial ended'
-        : plan.monthly_price != null
-          ? plan.name + ' - KSh ' + plan.monthly_price.toLocaleString() + '/month'
-          : plan.name
+  const action = 'inline-flex min-h-[44px] items-center gap-2 rounded-full px-5 text-sm font-medium'
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl">Dashboard</h1>
-          <p className="mt-1 text-sm text-white/50">Overview of your store activity.</p>
-        </div>
-        {plan && (
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
-            {trial === 'active' ? 'MIRA Preview' : plan.name}
-          </span>
-        )}
+    <div className="space-y-8">
+      <div>
+        <p className="text-sm text-white/50">Welcome back</p>
+        <h1 className="mt-1 font-display text-2xl md:text-3xl">{business.name}</h1>
+        <p className="mt-2 text-sm text-white/50">
+          <span className={visibility.live ? 'text-green-400' : 'text-red-400'}>{visibility.label}</span> - {visibility.detail}
+        </p>
       </div>
 
-      {business && (
-        <TrialCard
-          business={business}
-          essential={essential}
-          signature={popular}
-          onStarted={(updated) => setBusiness(updated)}
-        />
-      )}
+      <section aria-label="Store statistics">
+        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-white/10 md:grid-cols-4">
+          {statItems.map(([label, value]) => (
+            <div key={label} className="bg-[#0f0f10] p-4">
+              <dt className="text-xs text-white/45">{label}</dt>
+              <dd className="mt-1 text-xl font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-2 text-[11px] text-white/35">Counts come from real activity on your store. Store visits and order totals are not tracked yet.</p>
+      </section>
 
-      <div className="mt-6">
-        <ReferEarnBanner variant="dashboard" />
-      </div>
+      <section aria-label="Quick actions" className="flex flex-wrap items-center gap-3">
+        <Link to="/admin/products" className={action + ' bg-white text-black'}>
+          <Plus size={16} aria-hidden="true" /> Add Product
+        </Link>
+        <Link to="/admin/products" className={action + ' border border-white/25 text-white/90 hover:border-white/50'}>
+          <Package size={16} aria-hidden="true" /> Manage Products
+        </Link>
+        <button type="button" onClick={handleShare} className={action + ' border border-white/25 text-white/90 hover:border-white/50'}>
+          <Share2 size={16} aria-hidden="true" /> Share Store
+        </button>
+        {shareNote && <span role="status" className="text-xs text-white/60">{shareNote}</span>}
+      </section>
 
-      {business && plan && (
-        <div className="mt-6 rounded-2xl border border-white/10 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="text-sm text-white/60">Your plan</p>
-              <p className="mt-1 text-lg font-medium">{planTitle}</p>
-              <p className="mt-1 text-xs text-white/50">Status: {statusText(business)}. Hosting and website maintenance are included.</p>
-            </div> 
-            {pendingPayments.length > 0 && (
-                <p className="mt-1 text-xs text-yellow-300">A payment is waiting to be checked by MIRA. Your plan changes only after it is confirmed.</p>
-              )}
-              {lastPaymentRejected && (
-                <p className="mt-1 text-xs text-red-300">Your last payment could not be confirmed. See "Confirm your payment" below.</p>
-              )}
-            <SubscriptionCountdown nextBillingDate={business.next_billing_date} />
-          </div>
-          {notice && <p className="mt-3 text-sm text-red-400">{notice}</p>}
-
-          <p className="mt-3 text-xs text-white/40">
-            If your subscription ends, your store is hidden from customers until payment is confirmed. Your products and data are kept.
-          </p>
-
-          {!onTrial && plan.monthly_price != null && (
-            <PayInstructions planName={plan.name} amount={plan.monthly_price} />
-          )}
-
-          <a
-            href={supportWhatsAppUrl('Hi MIRA, I need help with my store: ' + business.name)}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white"
-          >
-            <MessageCircle size={13} />
-            Need help? Chat with MIRA support
-          </a>
-        </div>
-      )}
-      {business && (
-        <PaymentPanel business={business} payments={payments} essential={essential} signature={popular} onChanged={loadAll} />
-      )}
-      {business && plan && usedImages !== null && (
-        <div className="mt-6">
-          <ImageUsageBar
-            used={usedImages}
-            limit={plan.max_images}
-            planName={plan.name}
-            upgrade={business.plan === 'basic' ? { name: popular.name, limit: popular.max_images } : null}
-          />
-        </div>
-      )}
-
-      {business && business.plan === 'basic' && !onTrial && popular.monthly_price != null && (
-        <div className="mt-6 rounded-2xl border border-white/20 bg-white/5 p-5">
-          <p className="text-sm font-medium">Upgrade to {popular.name} - KSh {popular.monthly_price.toLocaleString()}/month</p>
-          <p className="mt-1 text-xs text-white/60">
-            {popular.max_images} active product images, installable store, product categories, search and filtering,
-            featured products, customer inquiries, store analytics and custom branding.
-          </p>
-          <PayInstructions planName={popular.name} amount={popular.monthly_price} />
-          <p className="mt-3 text-xs text-white/40">
-            Your plan changes only after MIRA confirms your payment. Sending the message or tapping a button does not upgrade it.
-          </p>
-        </div>
-      )}
-
-      <p className="mt-6 text-xs text-white/40">
-        {pro.name} is coming soon and cannot be purchased yet.
-      </p>
-
-      {business && <ShareStoreCard business={business} />}
-
-      {business && features && (
-        <div className="mt-6">
-          <InstallableStoreCard business={business} enabled={features.installable_store} popularName={popular.name} />
-        </div>
-      )}
-
-      <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3">
-        <StatsCard label="Total products" value={stats?.totalProducts ?? '-'} />
-        <StatsCard label="Available" value={stats?.availableProducts ?? '-'} />
-        <StatsCard label="Sold" value={stats?.soldProducts ?? '-'} />
-        <StatsCard label="Total views" value={stats?.totalViews ?? '-'} />
-        <StatsCard label="Total likes" value={stats?.totalLikes ?? '-'} />
-        <StatsCard label="WhatsApp enquiries" value={stats?.whatsappEnquiries ?? '-'} />
-      </div>
-
-      {features && business && (
-        <div className="mt-8 rounded-2xl border border-white/10 p-5">
-          <p className="mb-1 text-sm text-white/60">What your plan includes</p>
-          {business.plan === 'basic' && (
-            <p className="mb-4 text-xs text-white/40">
-              Locked features need {popular.name}. Your catalogue, WhatsApp ordering and basic customization stay available.
-            </p>
-          )}
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {featureLabels.map(([key, label]) => (
-              <div key={key} className="flex items-center gap-2 text-sm">
-                {features[key] ? (
-                  <Check size={15} className="text-green-400" />
-                ) : (
-                  <Lock size={15} className="text-white/30" />
+      {notices.length > 0 && (
+        <section aria-label="Notifications">
+          <h2 className="text-xs font-medium uppercase tracking-wide text-white/40">Needs your attention</h2>
+          <ul className="mt-2 divide-y divide-white/10 border-y border-white/10">
+            {notices.map((n) => (
+              <li key={n.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+                <p className={'min-w-0 flex-1 text-sm ' + toneClass[n.tone]}>{n.text}</p>
+                {n.to && (
+                  <Link to={n.to} className="inline-flex shrink-0 items-center gap-1 text-xs text-white/70 underline hover:text-white">
+                    {n.cta} <ChevronRight size={12} aria-hidden="true" />
+                  </Link>
                 )}
-                <span className={features[key] ? 'text-white' : 'text-white/40'}>
-                  {label}
-                  {!features[key] && key !== 'cart' && key !== 'favorites' ? ' - requires ' + popular.name : ''}
-                </span>
-              </div>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
+
+      <section aria-label="Recent activity">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-medium uppercase tracking-wide text-white/40">Recent activity</h2>
+          <Link to="/admin/orders" className="text-xs text-white/60 underline hover:text-white">See all</Link>
+        </div>
+        {enquiries === null ? (
+          <p className="mt-3 text-sm text-white/40">Loading...</p>
+        ) : enquiries.length === 0 ? (
+          <p className="mt-3 text-sm text-white/40">
+            No WhatsApp enquiries yet. They appear here when a customer taps Order on WhatsApp.
+          </p>
+        ) : (
+          <ul className="mt-2 divide-y divide-white/10 border-y border-white/10">
+            {enquiries.map((e) => (
+              <li key={e.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                <span className="min-w-0 truncate">
+                  WhatsApp enquiry{e.product_name ? ' for ' + e.product_name : ''}
+                </span>
+                <span className="shrink-0 text-xs text-white/40">{timeAgo(e.created_at, now)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <SubscriptionSummary
+        business={business}
+        onStarted={(updated) => {
+          setBusiness(updated)
+          reload()
+        }}
+      />
     </div>
   )
 }
