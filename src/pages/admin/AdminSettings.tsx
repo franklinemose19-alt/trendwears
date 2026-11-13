@@ -1,98 +1,87 @@
-import { useEffect, useState } from 'react'
-import { fetchMyBusiness, fetchPlanFeatures, updateBusiness } from '@/services/businesses'
-import { usePlans } from '@/hooks/usePlans'
-import type { Business, PlanFeatures } from '@/types'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { MessageCircle, LogOut } from 'lucide-react'
+import StoreSettingsForm from '@/components/StoreSettingsForm'
+import SubscriptionSettings from '@/components/SubscriptionSettings'
+import { useAuth } from '@/hooks/useAuth'
+import { useAdmin } from '@/hooks/useAdmin'
+import { supportWhatsAppUrl } from '@/config'
 
-const fields: [keyof Business, string][] = [
-  ['name', 'Store name'],
-  ['whatsapp_number', 'WhatsApp number (e.g. 254712345678)'],
-  ['description', 'Store description'],
-  ['instagram_url', 'Instagram URL'],
-  ['tiktok_url', 'TikTok URL'],
-  ['facebook_url', 'Facebook URL'],
-]
+const tabs = [
+  { id: 'store', label: 'Store' },
+  { id: 'subscription', label: 'Subscription' },
+  { id: 'account', label: 'Account & help' },
+] as const
 
-const DEFAULT_BRAND = '#4a5240'
+type TabId = (typeof tabs)[number]['id']
 
-export default function AdminSettingsPage() {
-  const { byId } = usePlans()
-  const [settings, setSettings] = useState<Business | null>(null)
-  const [features, setFeatures] = useState<PlanFeatures | null>(null)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState('')
+export default function AdminSettings() {
+  const [params, setParams] = useSearchParams()
+  const { business } = useAdmin()
+  const { signOut } = useAuth()
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    fetchMyBusiness().then((b) => {
-      setSettings(b)
-      if (b) fetchPlanFeatures(b.plan).then(setFeatures)
-    })
-  }, [])
+  const requested = params.get('tab')
+  const active: TabId = tabs.some((t) => t.id === requested) ? (requested as TabId) : 'store'
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!settings) return
-    setError('')
-    if (settings.brand_color && !/^#[0-9a-fA-F]{6}$/.test(settings.brand_color)) {
-      setError('Pick a valid colour.')
-      return
-    }
-    try {
-      await updateBusiness(settings.id, settings)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } catch (err: any) {
-      setError('Could not save: ' + (err?.message ?? 'unknown error'))
-    }
+  async function handleLogout() {
+    await signOut()
+    navigate('/login')
   }
-
-  if (!settings) return <p className="text-white/50">Loading...</p>
 
   return (
     <div>
-      <h1 className="font-display text-2xl">Settings</h1>
+      <h1 className="font-display text-2xl md:text-3xl">Settings</h1>
 
-      <form onSubmit={handleSubmit} className="mt-6 max-w-lg space-y-4 rounded-2xl border border-white/10 p-6">
-        {fields.map(([key, label]) => (
-          <div key={String(key)}>
-            <label className="mb-1 block text-sm text-white/60">{label}</label>
-            <input
-              value={(settings[key] as string) ?? ''}
-              onChange={(e) => setSettings({ ...settings, [key]: e.target.value })}
-              className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-            />
-          </div>
+      <div role="tablist" aria-label="Settings sections" className="mt-5 flex gap-1 overflow-x-auto border-b border-white/10">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={'tab-' + t.id}
+            aria-selected={active === t.id}
+            aria-controls={'panel-' + t.id}
+            onClick={() => setParams(t.id === 'store' ? {} : { tab: t.id })}
+            className={
+              'min-h-[44px] whitespace-nowrap border-b-2 px-4 text-sm ' +
+              (active === t.id ? 'border-white text-white' : 'border-transparent text-white/50 hover:text-white')
+            }
+          >
+            {t.label}
+          </button>
         ))}
+      </div>
 
-        <div>
-          <label className="mb-1 block text-sm text-white/60">Brand colour (buttons)</label>
-          {features?.custom_branding ? (
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={settings.brand_color ?? DEFAULT_BRAND}
-                onChange={(e) => setSettings({ ...settings, brand_color: e.target.value })}
-                className="h-10 w-14 cursor-pointer rounded border border-white/15 bg-transparent"
-              />
+      <div role="tabpanel" id={'panel-' + active} aria-labelledby={'tab-' + active} className="mt-6">
+        {active === 'store' && <StoreSettingsForm />}
+        {active === 'subscription' && <SubscriptionSettings />}
+        {active === 'account' && (
+          <div className="max-w-lg space-y-6">
+            <section>
+              <h2 className="text-sm font-medium">Help and support</h2>
+              <p className="mt-1 text-sm text-white/50">Questions about your store, a payment or your plan? Message MIRA on WhatsApp.</p>
+              <a
+                href={supportWhatsAppUrl('Hi MIRA, I need help with my store: ' + (business?.name ?? ''))}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 px-5 text-sm text-white/90 hover:border-white/50"
+              >
+                <MessageCircle size={16} aria-hidden="true" /> Chat with MIRA support
+              </a>
+            </section>
+            <section className="border-t border-white/10 pt-6">
+              <h2 className="text-sm font-medium">Account</h2>
               <button
                 type="button"
-                onClick={() => setSettings({ ...settings, brand_color: null })}
-                className="text-xs text-white/50 underline hover:text-white"
+                onClick={handleLogout}
+                className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 px-5 text-sm text-white/90 hover:border-white/50"
               >
-                Reset to MIRA default
+                <LogOut size={16} aria-hidden="true" /> Log out
               </button>
-              <span className="text-xs text-white/40">Choose a darker colour so button text stays readable.</span>
-            </div>
-          ) : (
-            <p className="text-xs text-white/40">Custom branding is included in {byId('popular').name}.</p>
-          )}
-        </div>
-
-        {error && <p className="text-sm text-red-400">{error}</p>}
-
-        <button type="submit" className="rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black disabled:opacity-60">
-          {saved ? 'Saved' : 'Save settings'}
-        </button>
-      </form>
+            </section>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
