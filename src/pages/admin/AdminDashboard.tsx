@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       </section>
 
       <section aria-label="Quick actions" className="flex flex-wrap items-center gap-3">
-        <Link to="/admin/products" className={action + ' bg-white text-black'}>
+        <Link to="/admin/products?add=1" className={action + ' bg-white text-black'}>
           <Plus size={16} aria-hidden="true" /> Add Product
         </Link>
         <Link to="/admin/products" className={action + ' border border-white/25 text-white/90 hover:border-white/50'}>
