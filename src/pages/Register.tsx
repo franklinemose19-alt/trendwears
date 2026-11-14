@@ -1,8 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { fetchMyBusiness, registerBusiness } from '@/services/businesses'
+import { PREVIEW_TRIAL_DAYS } from '@/config'
 import type { Business } from '@/types'
+
+const inputClass = 'w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40'
+
+// The free-trial promise, shown wherever a new store is created.
+function FreeTrialNote() {
+  return (
+    <div className="mt-4 rounded-xl border border-white/15 bg-white/5 px-4 py-3">
+      <p className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.2em] text-white/70">
+        <Sparkles size={12} aria-hidden="true" /> {PREVIEW_TRIAL_DAYS} DAYS FREE
+      </p>
+      <p className="mt-1 text-xs text-white/60">
+        No upfront subscription payment. No automatic charges. No payment details required. You start your free trial from your dashboard.
+      </p>
+    </div>
+  )
+}
 
 export default function Register() {
   const navigate = useNavigate()
@@ -119,35 +137,27 @@ export default function Register() {
           <h1 className="font-display text-2xl">Finish setting up your store</h1>
           <p className="mt-1 text-sm text-white/50">Signed in as {loggedInEmail}</p>
 
+          <FreeTrialNote />
+
           <div className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm text-white/60">Business name</label>
-              <input
-                required
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-              />
+              <label htmlFor="reg-name" className="mb-1 block text-sm text-white/60">Business name</label>
+              <input id="reg-name" required value={businessName} onChange={(e) => setBusinessName(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-white/60">WhatsApp number (e.g. 254712345678)</label>
-              <input
-                required
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-              />
+              <label htmlFor="reg-whatsapp" className="mb-1 block text-sm text-white/60">WhatsApp number (e.g. 254712345678)</label>
+              <input id="reg-whatsapp" required value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className={inputClass} />
             </div>
           </div>
 
-          {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+          {error && <p role="alert" className="mt-4 text-sm text-red-400">{error}</p>}
 
           <button
             type="submit"
             disabled={busy}
             className="mt-6 w-full rounded-lg bg-white py-2.5 text-sm font-medium text-black disabled:opacity-50"
           >
-            {busy ? 'Setting up...' : 'Create my store'}
+            {busy ? 'Setting up...' : 'Start My Free Store'}
           </button>
         </form>
       </div>
@@ -158,60 +168,39 @@ export default function Register() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0a0a0b] px-5 py-10 text-[#e8e8e6]">
       <form onSubmit={handleSignUpAndRegister} className="w-full max-w-sm rounded-2xl border border-white/10 p-8">
-        <h1 className="font-display text-2xl">Register your business</h1>
-        <p className="mt-1 text-sm text-white/50">Start selling on MIRA</p>
+        <h1 className="font-display text-2xl">Start your free store</h1>
+        <p className="mt-1 text-sm text-white/50">Your own branded online store, powered by MIRA</p>
+
+        <FreeTrialNote />
 
         <div className="mt-6 space-y-4">
           <div>
-            <label className="mb-1 block text-sm text-white/60">Business name</label>
-            <input
-              required
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-            />
+            <label htmlFor="reg-name" className="mb-1 block text-sm text-white/60">Business name</label>
+            <input id="reg-name" required value={businessName} onChange={(e) => setBusinessName(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-white/60">WhatsApp number (e.g. 254712345678)</label>
-            <input
-              required
-              value={whatsappNumber}
-              onChange={(e) => setWhatsappNumber(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-            />
+            <label htmlFor="reg-whatsapp" className="mb-1 block text-sm text-white/60">WhatsApp number (e.g. 254712345678)</label>
+            <input id="reg-whatsapp" required value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-white/60">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-            />
+            <label htmlFor="reg-email" className="mb-1 block text-sm text-white/60">Email</label>
+            <input id="reg-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-white/60">Password</label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40"
-            />
+            <label htmlFor="reg-password" className="mb-1 block text-sm text-white/60">Password</label>
+            <input id="reg-password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
           </div>
         </div>
 
-        {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
-        {notice && <p className="mt-4 text-sm text-yellow-400">{notice}</p>}
+        {error && <p role="alert" className="mt-4 text-sm text-red-400">{error}</p>}
+        {notice && <p role="status" className="mt-4 text-sm text-yellow-400">{notice}</p>}
 
         <button
           type="submit"
           disabled={busy}
           className="mt-6 w-full rounded-lg bg-white py-2.5 text-sm font-medium text-black disabled:opacity-50"
         >
-          {busy ? 'Setting up...' : 'Create my store'}
+          {busy ? 'Setting up...' : 'Start My Free Store'}
         </button>
 
         <p className="mt-5 text-center text-sm text-white/50">
