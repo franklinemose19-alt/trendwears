@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search, ExternalLink, Banknote, Star } from 'lucide-react'
 import { fetchAllBusinesses, updateBusinessStatus, updateBusinessPlan } from '@/services/businesses'
 import { recordPayment } from '@/services/payments'
+import { fetchAdminReferralOverview } from '@/services/referrals'
+import type { AdminReferralRow } from '@/services/referrals'
 import { syncTrialStatus, setFoundingAmbassador } from '@/services/trial'
 import { getSubscriptionState } from '@/utils/subscription'
 import { getTrialState, getFoundingState, trialLengthDays, trialCountdownLabel, formatTrialDate } from '@/utils/trial'
@@ -123,17 +125,21 @@ export default function BusinessList() {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [recordingFor, setRecordingFor] = useState<string | null>(null)
+   const [recordingFor, setRecordingFor] = useState<string | null>(null)
+  const [referrals, setReferrals] = useState<Record<string, AdminReferralRow>>({})
 
   async function load() {
     setLoading(true)
     // Let the server mark any overdue trials as "trial_expired" before the list is read.
     try { await syncTrialStatus() } catch { /* the label is cosmetic: access is decided by the dates */ }
-    const data = await fetchAllBusinesses()
+        const data = await fetchAllBusinesses()
     setBusinesses(data)
+    try {
+      const rows = await fetchAdminReferralOverview()
+      setReferrals(Object.fromEntries(rows.map((r) => [r.business_id, r])))
+    } catch { /* referral counts are extra information: the list still works without them */ }
     setLoading(false)
   }
-
   useEffect(() => { load() }, [])
 
   const filtered = useMemo(() => {
@@ -263,9 +269,17 @@ export default function BusinessList() {
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <SubscriptionCountdown nextBillingDate={b.next_billing_date} />
                 </div>
-                <div className="mt-3 rounded-lg bg-white/[0.03] p-3">
+                                <div className="mt-3 rounded-lg bg-white/[0.03] p-3">
                   <TrialDetails business={b} now={now} />
                 </div>
+                {referrals[b.id] && (
+                  <p className="mt-2 text-xs text-white/50">
+                    Referrals: {referrals[b.id].signed_up} signed up, {referrals[b.id].active_paying} active paying
+                    {referrals[b.id].partner_in_period != null && (
+                      <> - Founding Partner target: {referrals[b.id].partner_in_period} of 6 active paying referrals this period</>
+                    )}
+                  </p>
+                )}
 
                 {b.plan === 'pro' && (
                   <p className="mt-3 text-xs text-yellow-400">
