@@ -1,5 +1,5 @@
 import ShareStoreCard from '@/components/ShareStoreCard'
-import ReferEarnBanner from '@/components/ReferEarnBanner'
+import ReferralPanel from '@/components/ReferralPanel'
 import InstallableStoreCard from '@/components/InstallableStoreCard'
 import { useAdmin } from '@/hooks/useAdmin'
 import { usePlans } from '@/hooks/usePlans'
@@ -26,7 +26,7 @@ export default function AdminGrowth() {
 
       <section aria-labelledby="growth-refer">
         <h2 id="growth-refer" className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">Refer and earn</h2>
-        <ReferEarnBanner variant="dashboard" />
+        <ReferralPanel storeName={business.name} />
       </section>
 
       {features && (
