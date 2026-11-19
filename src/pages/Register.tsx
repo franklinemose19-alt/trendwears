@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { fetchMyBusiness, registerBusiness } from '@/services/businesses'
+import { claimReferral } from '@/services/referrals'
+import { captureReferralFromUrl, getPendingReferral, clearPendingReferral } from '@/utils/referral'
 import { PREVIEW_TRIAL_DAYS } from '@/config'
 import type { Business } from '@/types'
 
 const inputClass = 'w-full rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-white/40'
 
 // The free-trial promise, shown wherever a new store is created.
-function FreeTrialNote() {
+function FreeTrialNote({ referralCode }: { referralCode: string | null }) {
   return (
     <div className="mt-4 rounded-xl border border-white/15 bg-white/5 px-4 py-3">
       <p className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.2em] text-white/70">
@@ -18,6 +20,11 @@ function FreeTrialNote() {
       <p className="mt-1 text-xs text-white/60">
         No upfront subscription payment. No automatic charges. No payment details required. You start your free trial from your dashboard.
       </p>
+      {referralCode && (
+        <p className="mt-2 text-xs text-white/50">
+          Referral code <span className="font-mono text-white/70">{referralCode}</span> will be applied to your new store.
+        </p>
+      )}
     </div>
   )
 }
@@ -35,6 +42,20 @@ export default function Register() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+
+  // Apply the referral code from the link the merchant arrived through. A problem here never blocks signing up.
+  async function applyReferral() {
+    const code = getPendingReferral()
+    if (!code) return
+    try {
+      await claimReferral(code)
+    } catch {
+      /* an invalid, expired or self-referral code is simply not applied */
+    } finally {
+      clearPendingReferral()
+    }
+  }
 
   async function checkSession() {
     setCheckingSession(true)
@@ -50,7 +71,11 @@ export default function Register() {
     setCheckingSession(false)
   }
 
-  useEffect(() => { checkSession() }, [])
+  useEffect(() => {
+    captureReferralFromUrl()
+    setReferralCode(getPendingReferral())
+    checkSession()
+  }, [])
 
   async function handleLogoutAndRegisterNew() {
     await supabase.auth.signOut()
@@ -63,6 +88,7 @@ export default function Register() {
     setError('')
     try {
       await registerBusiness({ name: businessName, whatsappNumber })
+      await applyReferral()
       navigate('/admin')
     } catch (err: any) {
       setError(err?.message ?? 'Something went wrong. Please try again.')
@@ -87,6 +113,7 @@ export default function Register() {
       }
 
       await registerBusiness({ name: businessName, whatsappNumber })
+      await applyReferral()
       navigate('/admin')
     } catch (err: any) {
       setError(err?.message ?? 'Something went wrong. Please try again.')
@@ -137,7 +164,7 @@ export default function Register() {
           <h1 className="font-display text-2xl">Finish setting up your store</h1>
           <p className="mt-1 text-sm text-white/50">Signed in as {loggedInEmail}</p>
 
-          <FreeTrialNote />
+          <FreeTrialNote referralCode={referralCode} />
 
           <div className="mt-6 space-y-4">
             <div>
@@ -171,7 +198,7 @@ export default function Register() {
         <h1 className="font-display text-2xl">Start your free store</h1>
         <p className="mt-1 text-sm text-white/50">Your own branded online store, powered by MIRA</p>
 
-        <FreeTrialNote />
+        <FreeTrialNote referralCode={referralCode} />
 
         <div className="mt-6 space-y-4">
           <div>
