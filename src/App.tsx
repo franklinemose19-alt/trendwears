@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
+import { captureReferralFromUrl } from '@/utils/referral'
 import StoreLayout from '@/layouts/StoreLayout'
 import AdminLayout from '@/layouts/AdminLayout'
 import MiraAdminLayout from '@/layouts/MiraAdminLayout'
@@ -35,6 +37,9 @@ function NotFound() {
 }
 
 export default function App() {
+  // A link like /?ref=ABCD1234 is remembered, so the referral survives signup (and confirming an email).
+  useEffect(() => { captureReferralFromUrl() }, [])
+
   return (
     <Routes>
       <Route path="/" element={<MiraLanding />} />
