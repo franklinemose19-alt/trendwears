@@ -9,11 +9,15 @@ import PayInstructions from '@/components/PayInstructions'
 import InstallButton from '@/components/InstallButton'
 import { activateManifest, MIRA_MANIFEST_HREF } from '@/utils/installPrompt'
 
+// Lime accent on black: #c6f432. It is used for the main actions, the "29 DAYS FREE" badge, the recommended plan and
+// the check marks that matter. On the black background it has a contrast ratio of about 16:1, and black text on a lime
+// button is just as readable. Everything else stays black and white.
+
 type Cell = string | boolean
 interface Row { label: string; essential: Cell; signature: Cell }
 
-function CompareCell({ value }: { value: Cell }) {
-  if (value === true) return <Check size={16} className="mx-auto text-white" />
+function CompareCell({ value, accent }: { value: Cell; accent?: boolean }) {
+  if (value === true) return <Check size={16} className={'mx-auto ' + (accent ? 'text-[#c6f432]' : 'text-white')} />
   if (value === false) return <span className="text-white/25">-</span>
   return <span className="text-xs text-white/70">{value}</span>
 }
@@ -21,6 +25,8 @@ function CompareCell({ value }: { value: Cell }) {
 function Soon() {
   return <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/60">Coming soon</span>
 }
+
+const focusRing = ' focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c6f432]'
 
 export default function MiraLanding() {
   const { byId } = usePlans()
@@ -90,39 +96,47 @@ export default function MiraLanding() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-[#e8e8e6]">
+    <div className="min-h-screen bg-[#0a0a0b] text-[#e8e8e6] selection:bg-[#c6f432] selection:text-black">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6">
-        <span className="font-display text-xl">MIRA</span>
+        <span className="font-display text-xl">MIRA<span className="text-[#c6f432]">.</span></span>
         <div className="flex items-center gap-4">
           <InstallButton manifestHref={MIRA_MANIFEST_HREF} label="Install MIRA" variant="dark" />
-          <Link to="/login" className="text-sm text-white/70 hover:text-white">Sign in</Link>
+          <Link to="/login" className={'text-sm text-white/70 hover:text-[#c6f432]' + focusRing}>Sign in</Link>
         </div>
       </header>
 
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
-        <p className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-white/70">
-          <Sparkles size={12} aria-hidden="true" /> {PREVIEW_TRIAL_DAYS} DAYS FREE
-        </p>
-        <h1 className="mt-6 font-display text-5xl leading-[1.05] md:text-7xl">Take Your Business Beyond the Shop.</h1>
-        <p className="mx-auto mt-5 max-w-xl text-sm text-white/60 md:text-base">
-          Your own branded online store, powered by MIRA. Let customers discover your products, browse your catalogue and place orders through WhatsApp.
-        </p>
-        <p className="mx-auto mt-4 max-w-md text-sm text-white/80">
-          No upfront subscription payment. No automatic charges. Start your online store today and experience MIRA.
-        </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            to="/register"
-            className="w-full rounded-full bg-white px-8 py-3.5 text-sm font-medium tracking-wide text-black transition-transform hover:scale-[1.02] sm:w-auto"
-          >
-            Start My Free Store
-          </Link>
-          <a
-            href="#demo"
-            className="w-full rounded-full border border-white/30 px-8 py-3.5 text-sm font-medium tracking-wide text-white hover:border-white/60 sm:w-auto"
-          >
-            Explore demo stores
-          </a>
+      <section className="relative mx-auto max-w-3xl px-5 pb-16 pt-8 text-center">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 -top-10 h-[420px] bg-[radial-gradient(ellipse_at_top,rgba(198,244,50,0.13),transparent_65%)]"
+        />
+        <div className="relative">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-[#c6f432]/40 bg-[#c6f432]/10 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-[#c6f432]">
+            <Sparkles size={12} aria-hidden="true" /> {PREVIEW_TRIAL_DAYS} DAYS FREE
+          </p>
+          <h1 className="mt-6 font-display text-5xl leading-[1.05] md:text-7xl">
+            Take Your Business <span className="text-[#c6f432]">Beyond the Shop.</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-sm text-white/60 md:text-base">
+            Your own branded online store, powered by MIRA. Let customers discover your products, browse your catalogue and place orders through WhatsApp.
+          </p>
+          <p className="mx-auto mt-4 max-w-md text-sm text-white/80">
+            No upfront subscription payment. No automatic charges. Start your online store today and experience MIRA.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              to="/register"
+              className={'w-full rounded-full bg-[#c6f432] px-8 py-3.5 text-sm font-semibold tracking-wide text-black shadow-[0_0_32px_-8px_rgba(198,244,50,0.7)] transition hover:scale-[1.02] hover:bg-[#d6ff52] sm:w-auto' + focusRing}
+            >
+              Start My Free Store
+            </Link>
+            <a
+              href="#demo"
+              className={'w-full rounded-full border border-white/30 px-8 py-3.5 text-sm font-medium tracking-wide text-white hover:border-[#c6f432] hover:text-[#c6f432] sm:w-auto' + focusRing}
+            >
+              Explore demo stores
+            </a>
+          </div>
         </div>
       </section>
 
@@ -139,8 +153,8 @@ export default function MiraLanding() {
         </p>
         <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-4">
           {/* PREVIEW - free trial */}
-          <div className="relative rounded-2xl border border-dashed border-white/25 p-6">
-            <span className="absolute -top-3 left-5 inline-flex items-center gap-1 rounded-full border border-white/20 bg-[#0a0a0b] px-3 py-1 text-[11px] text-white/80">
+          <div className="relative rounded-2xl border border-dashed border-[#c6f432]/40 p-6">
+            <span className="absolute -top-3 left-5 inline-flex items-center gap-1 rounded-full border border-[#c6f432]/40 bg-[#0a0a0b] px-3 py-1 text-[11px] text-[#c6f432]">
               <Sparkles size={11} /> {PREVIEW_TRIAL_DAYS}-DAY FREE TRIAL
             </span>
             <p className="text-sm text-white/60">MIRA Preview</p>
@@ -151,14 +165,14 @@ export default function MiraLanding() {
             <ul className="mt-5 space-y-2.5">
               {previewFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-white/70">
-                  <Check size={15} className="mt-0.5 shrink-0 text-white/40" />
+                  <Check size={15} className="mt-0.5 shrink-0 text-[#c6f432]" />
                   {f}
                 </li>
               ))}
             </ul>
             <Link
               to="/register"
-              className="mt-6 block rounded-full border border-white/30 py-2.5 text-center text-sm font-medium text-white hover:border-white/60"
+              className={'mt-6 block rounded-full border border-[#c6f432]/60 py-2.5 text-center text-sm font-medium text-[#c6f432] hover:bg-[#c6f432] hover:text-black' + focusRing}
             >
               Start free trial
             </Link>
@@ -184,7 +198,7 @@ export default function MiraLanding() {
             </ul>
             <Link
               to="/register"
-              className="mt-6 block rounded-full border border-white/30 py-2.5 text-center text-sm font-medium text-white hover:border-white/60"
+              className={'mt-6 block rounded-full border border-white/30 py-2.5 text-center text-sm font-medium text-white hover:border-[#c6f432] hover:text-[#c6f432]' + focusRing}
             >
               Get {essential.name}
             </Link>
@@ -192,8 +206,8 @@ export default function MiraLanding() {
           </div>
 
           {/* SIGNATURE - recommended */}
-          <div className="relative rounded-2xl border-2 border-white bg-white/5 p-6 shadow-[0_0_30px_-10px_rgba(255,255,255,0.3)]">
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-medium text-black">
+          <div className="relative rounded-2xl border-2 border-[#c6f432] bg-[#c6f432]/[0.04] p-6 shadow-[0_0_40px_-12px_rgba(198,244,50,0.5)]">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#c6f432] px-3 py-1 text-xs font-semibold text-black">
               {'\u2B50 Recommended'}
             </span>
             <p className="text-sm text-white/70">{signature.name}</p>
@@ -201,8 +215,8 @@ export default function MiraLanding() {
               KSh {signaturePrice.toLocaleString()}<span className="text-sm text-white/40">/month</span>
             </p>
             <p className="mt-2 text-xs text-white/60">A more organized, branded shopping experience for growing boutiques.</p>
-            <div className="mt-5 flex items-start gap-3 rounded-lg border border-white/20 bg-white/10 p-3">
-              <Smartphone size={20} className="mt-0.5 shrink-0 text-white" />
+            <div className="mt-5 flex items-start gap-3 rounded-lg border border-[#c6f432]/30 bg-[#c6f432]/10 p-3">
+              <Smartphone size={20} className="mt-0.5 shrink-0 text-[#c6f432]" />
               <div>
                 <p className="text-sm font-medium text-white">Installable Store</p>
                 <p className="text-xs text-white/80">Add to Home Screen</p>
@@ -215,7 +229,7 @@ export default function MiraLanding() {
             <ul className="mt-5 space-y-2.5">
               {signatureFeatures.map((f) => (
                 <li key={f.text} className="flex items-start gap-2 text-sm text-white/80">
-                  <Check size={15} className="mt-0.5 shrink-0 text-white" />
+                  <Check size={15} className="mt-0.5 shrink-0 text-[#c6f432]" />
                   <span>
                     {f.text}
                     {f.soon && <Soon />}
@@ -225,7 +239,7 @@ export default function MiraLanding() {
             </ul>
             <Link
               to="/register"
-              className="mt-6 block rounded-full bg-white py-2.5 text-center text-sm font-medium text-black hover:scale-[1.01]"
+              className={'mt-6 block rounded-full bg-[#c6f432] py-2.5 text-center text-sm font-semibold text-black hover:scale-[1.01] hover:bg-[#d6ff52]' + focusRing}
             >
               Choose {signature.name}
             </Link>
@@ -261,7 +275,7 @@ export default function MiraLanding() {
               <tr className="border-b border-white/10">
                 <th className="p-3 font-normal text-white/50">Compare plans</th>
                 <th className="p-3 text-center font-medium">{essential.name}</th>
-                <th className="p-3 text-center font-medium">{signature.name}</th>
+                <th className="p-3 text-center font-medium text-[#c6f432]">{signature.name}</th>
               </tr>
             </thead>
             <tbody>
@@ -269,7 +283,7 @@ export default function MiraLanding() {
                 <tr key={r.label} className="border-b border-white/5 last:border-0">
                   <td className="p-3 text-white/70">{r.label}</td>
                   <td className="p-3 text-center"><CompareCell value={r.essential} /></td>
-                  <td className="p-3 text-center"><CompareCell value={r.signature} /></td>
+                  <td className="p-3 text-center"><CompareCell value={r.signature} accent /></td>
                 </tr>
               ))}
             </tbody>
