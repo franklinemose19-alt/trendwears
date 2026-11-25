@@ -36,8 +36,8 @@ export default function DemoSection({ essential, signature, atelier }: Props) {
 
   return (
     <section id="demo" aria-labelledby="demo-heading" className="mx-auto max-w-5xl px-5 pb-16">
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-center md:p-10">
-        <p className="text-[11px] font-medium tracking-wide text-white/50">INTERACTIVE DEMO</p>
+      <div className="rounded-3xl border border-[#c6f432]/15 bg-white/[0.03] p-6 text-center md:p-10">
+        <p className="text-[11px] font-medium tracking-wide text-[#c6f432]">INTERACTIVE DEMO</p>
         <h2 id="demo-heading" className="mt-2 font-display text-3xl leading-tight md:text-4xl">See Your Boutique Come to Life.</h2>
         <p className="mx-auto mt-3 max-w-lg text-sm text-white/60 md:text-base">
           Explore a sample MIRA boutique and see how your products could look online. No account needed.
@@ -50,7 +50,7 @@ export default function DemoSection({ essential, signature, atelier }: Props) {
               type="button"
               aria-label={'Open the demo store: ' + p.name}
               onClick={(e) => openDemo(e.currentTarget, p.id)}
-              className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition-colors hover:border-white/30"
+              className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition-colors hover:border-[#c6f432]/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c6f432]"
             >
               <DemoImage product={p} colourHex={p.colours[0].hex} className="h-auto w-full transition-transform duration-500 group-hover:scale-105" />
               <div className="px-3 py-2">
@@ -65,13 +65,13 @@ export default function DemoSection({ essential, signature, atelier }: Props) {
           <button
             type="button"
             onClick={(e) => openDemo(e.currentTarget)}
-            className="rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition-transform hover:scale-[1.02]"
+            className="rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition hover:scale-[1.02] hover:shadow-[0_0_28px_-6px_rgba(198,244,50,0.7)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c6f432]"
           >
             Explore Demo Store
           </button>
           <Link
             to="/register"
-            className="rounded-full border border-white/30 px-8 py-3 text-sm font-medium text-white hover:border-white/60"
+            className="rounded-full border border-white/30 px-8 py-3 text-sm font-medium text-white hover:border-[#c6f432] hover:text-[#c6f432] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c6f432]"
           >
             Create Your Store
           </Link>
